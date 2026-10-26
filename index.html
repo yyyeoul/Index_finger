@@ -661,19 +661,13 @@
 
         function checkDailyReset() {
             const kst = getKSTDate();
-            const logicalDate = new Date(kst);
-            if (kst.getHours() < 9) {
-                logicalDate.setDate(logicalDate.getDate() - 1);
-            }
-            const logicalDateStr = getKSTDateString(logicalDate);
+            const todayStr = getKSTDateString(kst);
 
-            if (gameState.lastResetDateStr !== logicalDateStr) {
-                calculateKarmaOnReset(logicalDateStr);
-
-                gameState.lastResetDateStr = logicalDateStr;
+            if (gameState.lastResetDateStr !== todayStr) {
+                gameState.lastResetDateStr = todayStr;
                 gameState.dailyIssuedCount = 0;
                 gameState.dailyPrescripts = [];
-
+                gameState.lastOpenedTimestamp = null;
                 issueNextPrescript();
                 saveState();
             }
