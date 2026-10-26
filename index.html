@@ -246,7 +246,7 @@
                         <h1 id="logo-title" class="font-cinzel tracking-widest text-base sm:text-lg font-black leading-tight">THE INDEX</h1>
                         <span id="theme-badge" class="text-[9px] font-mono px-1.5 py-0.2 rounded border uppercase font-semibold">IVORY</span>
                     </div>
-                    <p id="logo-subtitle" class="text-[10px] sm:text-xs font-serif tracking-tight">도시의 뜻, 검지의 지령</p>
+                    <p id="logo-subtitle" class="text-[10px] sm:text-xs font-serif tracking-tight">도시의 의지, 검지의 지령</p>
                 </div>
             </div>
 
@@ -378,7 +378,7 @@
                     <span id="rank-detail-badge" class="font-bold px-2 py-0.5 rounded-md border text-[11px]">수행 대기 중</span>
                 </div>
                 <p id="rank-info-desc" class="text-xs leading-relaxed opacity-80">
-                    지령을 성실히 수행하면 도시의 뜻에 따라 승급이 이루어집니다.
+                    지령을 성실히 수행하면 도시의 의지에 따라 승급이 이루어집니다.
                 </p>
             </div>
 
@@ -478,7 +478,7 @@
                 대행 완료.
             </h1>
             <p class="text-xs sm:text-sm text-rose-500 font-mono tracking-widest animate-pulse">
-                도시의 뜻은 당신에게 대행자를 보냈습니다.
+                도시의 의지는 당신에게 대행자를 보냈습니다.
             </p>
         </div>
         <button onclick="recoverFromEjection()" class="absolute bottom-4 right-4 z-20 text-slate-800/30 hover:text-slate-500 transition-all p-3 rounded-full cursor-pointer focus:outline-none">
@@ -839,7 +839,7 @@
                 }
                 gameState.rankExecutions = 0;
 
-                showToast("승급 확정!", `도시의 뜻에 따라 [${prevRankName}]에서 [${RANKS[gameState.rank].name}](으)로 승급하였습니다.`);
+                showToast("승급 확정!", `도시의 의지에 따라 [${prevRankName}]에서 [${RANKS[gameState.rank].name}](으)로 승급하였습니다.`);
 
                 checkDailyReset();
                 if (gameState.dailyIssuedCount < RANKS[gameState.rank].quota) {
