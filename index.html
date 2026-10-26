@@ -675,20 +675,73 @@
 
         function issueNextPrescript() {
             const rankInfo = RANKS[gameState.rank];
+            if (gameState.dailyIssuedCount >= rankInfo.quota) return;
 
-            if (gameState.karma >= 5) {
-                if (gameState.rank === 'MESSENGER') gameState.rank = 'PROSELYTE';
-                else if (gameState.rank === 'PROSELYTE') gameState.rank = 'NONE';
+            let libIdx = -1;
+            let attempts = 0;
+            const kstTime = getKSTDate().getTime();
 
-                const specialPrescript = {
-                    id: 'p-forced-' + Date.now(),
-                    libraryIndex: -1,
-                    text: "지령을 따른다.",
-                    executed: false,
-                    opened: false,
-                    isForcedSpecial: true,
-                    availableAt: getKSTDate().getTime()
-                };
+            while (attempts < 50) {
+                const rand = Math.floor(Math.random() * PRESCRIPT_LIBRARY.length);
+                const lastUsedTime = gameState.usedPrescriptIds[rand] || 0;
+                // 24시간 이내 재등장 방지
+                if (kstTime - lastUsedTime > 24 * 60 * 60 * 1000) {
+                    libIdx = rand;
+                    break;
+                }
+                attempts++;
+            }
+            if (libIdx === -1) libIdx = Math.floor(Math.random() * PRESCRIPT_LIBRARY.length);
+
+            const prescriptId = 'pre-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
+            
+            // 첫 번째 지령이 아니고 카르마가 3 이상일 때 30% 확률로 검지의 불타는 지령 발생
+            let isKarmicSpecial = false;
+            if (gameState.dailyIssuedCount > 0 && gameState.karma >= 3 && Math.random() < 0.3) {
+                isKarmicSpecial = true;
+            }
+
+            let text = PRESCRIPT_LIBRARY[libIdx];
+            if (isKarmicSpecial) {
+                text = "[검지의 불타는 지령] 부정한 자의 청원이나 사사로운 감정에 휘둘리지 말고 즉시 지령을 이행할지니라: " + text;
+            }
+
+            const kst = getKSTDate();
+            const availableAt = kst.getTime() + (gameState.dailyIssuedCount === 0 ? 0 : 10 * 60 * 1000);
+
+            gameState.dailyPrescripts.push({
+                id: prescriptId,
+                libraryIndex: libIdx,
+                text: text,
+                opened: gameState.dailyIssuedCount === 0,
+                executed: false,
+                availableAt: availableAt,
+                isKarmicSpecial: isKarmicSpecial
+            });
+
+            gameState.dailyIssuedCount++;
+            if (gameState.dailyIssuedCount === 1 && !gameState.lastOpenedTimestamp) {
+                gameState.lastOpenedTimestamp = kst.getTime();
+            }
+        }
+
+        function openPrescript(prescriptId) {
+            const target = gameState.dailyPrescripts.find(p => p.id === prescriptId);
+            if (!target || target.opened) return;
+
+            const kst = getKSTDate();
+            if (kst.getTime() < target.availableAt) {
+                showToast("대기 중", "아직 열람 대기 시간이 지나지 않았습니다.", true);
+                return;
+            }
+
+            target.opened = true;
+            gameState.lastOpenedTimestamp = kst.getTime();
+            saveState();
+            updateUI();
+            showToast("열람", "새로운 지령의 봉인이 해제되었습니다.");
+        }
+
 
                 gameState.dailyPrescripts.push(specialPrescript);
                 saveState();
@@ -698,7 +751,8 @@
             if (gameState.dailyIssuedCount >= rankInfo.quota) return;
 
             const kst = getKSTDate();
-            const dateStr = gameState.lastResetDateStr;
+            const availableAt = kst.getTime() + (gameState.dailyIssuedCount === 0 ? 0 : 10 * 60 * 1000);
+
 
             let selectedIndex = -1;
             let attempts = 0;
