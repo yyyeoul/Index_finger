@@ -19,13 +19,16 @@
                 extend: {
                     colors: {
                         index: {
-                            black: '#0a0a0c',
-                            dark: '#141419',
-                            card: '#1c1c24',
-                            crimson: '#8b0000',
+                           black: '#070a12',
+                            dark: '#0d1322',
+                            card: '#131b2e',
+                            cyan: '#38bdf8',
+                            brightCyan: '#60a5fa',
+                            glowBlue: '#3b82f6',
+                            crimson: '#991b1b',
                             brightCrimson: '#dc2626',
                             gold: '#c5a059',
-                            parchment: '#e2d7c5',
+                            parchment: '#f4efdf',
                             text: '#d1d5db'
                         }
                     },
@@ -39,7 +42,7 @@
     </script>
     <style>
         body {
-            background-color: #0a0a0c;
+            background-color: #050811;
             color: #d1d5db;
             font-family: 'Noto Serif KR', serif;
             background-image: radial-gradient(circle at 50% 20%, rgba(139, 0, 0, 0.15) 0%, transparent 60%);
@@ -62,24 +65,24 @@
             width: 6px;
         }
         ::-webkit-scrollbar-track {
-            background: #141419;
+            background: #0d1322;
         }
         ::-webkit-scrollbar-thumb {
-            background: #374151;
+            background: #1e3a8a;
             border-radius: 3px;
         }
         ::-webkit-scrollbar-thumb:hover {
-            background: #8b0000;
+            background: #2563eb;
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col justify-between selection:bg-index-crimson selection:text-white">
+<body class="min-h-screen flex flex-col justify-between selection:bg-sky-500 selection:text-white">
 
     <!-- Header / Navbar -->
     <header class="border-b border-zinc-800 bg-index-dark/90 backdrop-blur sticky top-0 z-40 px-4 py-3">
         <div class="max-w-4xl mx-auto flex justify-between items-center">
             <div class="flex items-center space-x-3">
-                <i class="fa-solid fa-scroll text-index-crimson text-2xl"></i>
+                <i class="fa-solid fa-scroll text-sky-500 text-2xl"></i>
                 <div>
                     <h1 class="font-cinzel tracking-widest text-lg md:text-xl font-bold text-gray-100">THE INDEX</h1>
                     <p class="text-xs text-zinc-500 font-sans tracking-tight">도시의 뜻, 검지의 지령</p>
@@ -89,7 +92,7 @@
             <!-- Player Rank Badge -->
             <div class="flex items-center space-x-3 bg-zinc-900/80 border border-zinc-800 px-3 py-1.5 rounded-lg">
                 <div class="text-right">
-                    <div class="text-[10px] text-zinc-400 font-sans uppercase tracking-wider">현재 신분</div>
+                    <div class="text-[10px] text-zinc-400 font-sans uppercase tracking-wider">현재 등급</div>
                     <div id="user-rank-display" class="font-bold text-sm text-index-gold">없음</div>
                 </div>
                 <div id="rank-icon-container" class="w-8 h-8 rounded bg-zinc-800 flex items-center justify-center border border-zinc-700">
@@ -106,7 +109,7 @@
         <div class="bg-zinc-900/60 border border-zinc-800 rounded-xl p-4 flex flex-col md:flex-row justify-between items-center gap-4">
             <div class="space-y-1 text-center md:text-left">
                 <div class="text-xs text-zinc-400 flex items-center justify-center md:justify-start gap-1">
-                    <i class="fa-solid fa-clock text-index-crimson"></i>
+                    <i class="fa-solid fa-clock text-sky-400"></i>
                     <span>현재 시스템 시간 (KST):</span>
                     <span id="current-kst-time" class="font-mono text-zinc-200">-</span>
                 </div>
@@ -122,16 +125,16 @@
         </div>
 
         <!-- Dev Controls Panel (Hidden by Default) -->
-        <div id="dev-panel" class="hidden bg-red-950/20 border border-red-900/40 rounded-xl p-4 space-y-3">
-            <div class="flex justify-between items-center border-b border-red-900/30 pb-2">
-                <span class="text-xs font-bold text-red-400 uppercase tracking-wider"><i class="fa-solid fa-bug mr-1"></i> 테스트 제어판 (시간/지령 강제 조작)</span>
+        <div id="dev-panel" class="hidden bg-sky-950/20 border border-sky-900/40 rounded-xl p-4 space-y-3">
+            <div class="flex justify-between items-center border-b border-sky-900/30 pb-2">
+                <span class="text-xs font-bold text-sky-400 uppercase tracking-wider"><i class="fa-solid fa-bug mr-1"></i> 테스트 제어판 (시간/지령 강제 조작)</span>
                 <span class="text-[11px] text-zinc-500">시간 가속 및 리셋 테스트용</span>
             </div>
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
                 <button onclick="addTime(10)" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-200 py-2 px-3 rounded border border-zinc-700">+10분 가속</button>
                 <button onclick="skipToTomorrow9AM()" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-200 py-2 px-3 rounded border border-zinc-700">다음날 09시 이동</button>
                 <button onclick="forcePromotionCheck()" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-200 py-2 px-3 rounded border border-zinc-700">승급 확률 시도</button>
-                <button onclick="resetAllData()" class="bg-red-900/40 hover:bg-red-900/60 text-red-200 py-2 px-3 rounded border border-red-700">데이터 초기화</button>
+                <button onclick="resetAllData()" class="bg-sky-900/40 hover:bg-sky-900/60 text-sky-200 py-2 px-3 rounded border border-sky-700">데이터 초기화</button>
             </div>
         </div>
 
@@ -144,7 +147,7 @@
                     <span id="daily-quota-text" class="text-index-gold font-bold">0 / 1 완료</span>
                 </div>
                 <div class="w-full bg-zinc-900 h-2 rounded-full overflow-hidden border border-zinc-800">
-                    <div id="daily-quota-bar" class="bg-index-crimson h-full w-0 transition-all duration-300"></div>
+                    <div id="daily-quota-bar" class="bg-gradient-to-r from-sky-600 to-sky-600 h-full w-0 transition-all duration-300"></div>
                 </div>
                 <div class="text-[11px] text-zinc-500 flex justify-between">
                     <span>수행자: 하루 2개</span>
@@ -168,7 +171,7 @@
         <div class="space-y-4">
             <div class="flex justify-between items-center border-b border-zinc-800 pb-2">
                 <h2 class="text-lg font-bold text-zinc-100 flex items-center gap-2">
-                    <i class="fa-solid fa-envelope-open-text text-index-crimson"></i>
+                    <i class="fa-solid fa-envelope-open-text text-sky-400"></i>
                     <span>오늘 도착한 지령</span>
                 </h2>
                 <span id="cooldown-timer-status" class="text-xs text-amber-400 font-mono"></span>
@@ -183,7 +186,7 @@
         <!-- Tabs Section: History (10 items pagination) & Completed Prescripts Archive -->
         <div class="bg-index-card border border-zinc-800 rounded-xl overflow-hidden mt-8">
             <div class="flex border-b border-zinc-800 bg-zinc-900/50">
-                <button onclick="switchTab('history')" id="tab-btn-history" class="px-5 py-3 text-sm font-semibold border-b-2 border-index-crimson text-index-crimson transition">
+                <button onclick="switchTab('history')" id="tab-btn-history" class="px-5 py-3 text-sm font-semibold border-b-2 border-sky-500 text-sky-400 transition">
                     <i class="fa-solid fa-clock-rotate-left mr-1.5"></i>수행 기록 (<span id="history-total-count">0</span>)
                 </button>
                 <button onclick="switchTab('archive')" id="tab-btn-archive" class="px-5 py-3 text-sm font-semibold border-b-2 border-transparent text-zinc-400 hover:text-zinc-200 transition">
@@ -225,8 +228,8 @@
 
     <!-- Toast Modal -->
     <div id="toast-modal" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
-        <div id="toast-bg" class="bg-zinc-900 border border-index-crimson text-zinc-100 px-5 py-3 rounded-lg shadow-xl flex items-center space-x-3">
-            <i id="toast-icon" class="fa-solid fa-circle-check text-index-crimson text-xl"></i>
+        <div id="toast-bg" class="bg-zinc-900 border border-sky-500 text-zinc-100 px-5 py-3 rounded-lg shadow-xl flex items-center space-x-3">
+            <i id="toast-icon" class="fa-solid fa-circle-check text-index-text-xl"></i>
             <div>
                 <div id="toast-title" class="font-bold text-sm">지령 수행 완료</div>
                 <div id="toast-msg" class="text-xs text-zinc-400">검지의 뜻이 이뤄졌습니다.</div>
@@ -340,7 +343,7 @@
         const RANKS = {
             NONE: { name: '없음', quota: 1, prob: 0.075, pity: 20, icon: 'fa-user-xmark', color: 'text-zinc-400' },
             PROSELYTE: { name: '수행자', quota: 2, prob: 0.010, pity: 100, icon: 'fa-user-shield', color: 'text-index-gold' },
-            MESSENGER: { name: '대행자', quota: 3, prob: 0.0, pity: 0, icon: 'fa-crown', color: 'text-red-500' }
+            MESSENGER: { name: '대행자', quota: 3, prob: 0.0, pity: 0, icon: 'fa-crown', color: 'text-sky-500' }
         };
 
         function getKSTDate() {
@@ -504,7 +507,7 @@
                 date: timeStr
             });
 
-            showToast("지령 수행 완료", "검지의 뜻이 성공적으로 이행되었습니다.");
+            showToast("지령 수행 완료", "지령의 뜻이 성공적으로 이행되었습니다.");
 
             // Cooldown Rule: 10 minutes (600,000 ms) after execution
             const rankInfo = RANKS[gameState.rank];
@@ -604,8 +607,8 @@
 
                 card.innerHTML = `
                     <div class="stamp-executed ${item.executed ? 'active' : ''} absolute right-4 bottom-3 pointer-events-none select-none">
-                        <div class="w-28 h-28 border-4 border-index-crimson rounded-full flex flex-col items-center justify-center text-index-crimson font-black tracking-tighter opacity-80 rotate-[-15deg]">
-                            <span class="text-xs border-b border-index-crimson pb-0.5 uppercase">THE INDEX</span>
+                        <div class="w-28 h-28 border-4 border-sky-500 rounded-full flex flex-col items-center justify-center text-sky-200 font-black tracking-tighter opacity-80 rotate-[-15deg]">
+                            <span class="text-xs border-b border-sky-500 pb-0.5 uppercase">THE INDEX</span>
                             <span class="text-sm font-serif my-0.5">수행됨</span>
                             <span class="text-[9px]">${gameState.lastResetDateStr}</span>
                         </div>
@@ -616,7 +619,7 @@
                             <span class="bg-zinc-900 border border-zinc-800 text-index-gold text-xs px-2.5 py-1 rounded font-mono">
                                 지령 #${idx + 1}
                             </span>
-                            ${item.executed ? '<span class="bg-red-950/60 border border-red-800 text-red-400 text-xs px-2 py-0.5 rounded">이행 완료</span>' : ''}
+                            ${item.executed ? '<span class="bg-sky-800/60 border border-sky-800 text-sky-400 text-xs px-2 py-0.5 rounded">이행 완료</span>' : ''}
                         </div>
                     </div>
 
@@ -636,7 +639,7 @@
                         ${!item.executed ? `
                             <button onclick="executePrescript('${item.id}')" 
                                 ${isLockedTime ? 'disabled' : ''}
-                                class="bg-index-crimson hover:bg-red-700 disabled:bg-zinc-800 disabled:text-zinc-600 disabled:border-zinc-800 border border-red-700 text-white text-xs font-bold px-4 py-2 rounded-lg shadow transition flex items-center gap-1.5">
+                                class="bg-sky-900 hover:bg-sky-500 disabled:bg-zinc-800 disabled:text-zinc-600 disabled:border-zinc-800 border border-sky-900 text-white text-xs font-bold px-4 py-2 rounded-lg shadow transition flex items-center gap-1.5">
                                 <i class="fa-solid fa-stamp"></i>
                                 <span>수행 완료</span>
                             </button>
@@ -674,7 +677,7 @@
                         <div class="text-zinc-200 font-serif">"${item.text}"</div>
                         <div class="text-[11px] text-zinc-500">${item.date} (${item.rank})</div>
                     </div>
-                    <span class="text-index-crimson font-bold shrink-0 ml-2"><i class="fa-solid fa-circle-check mr-1"></i>수행됨</span>
+                    <span class="text-sky-500 font-bold shrink-0 ml-2"><i class="fa-solid fa-circle-check mr-1"></i>수행됨</span>
                 </div>
             `).join('');
 
@@ -763,12 +766,12 @@
             const archiveContent = document.getElementById('tab-content-archive');
 
             if (tabName === 'history') {
-                historyBtn.className = "px-5 py-3 text-sm font-semibold border-b-2 border-index-crimson text-index-crimson transition";
+                historyBtn.className = "px-5 py-3 text-sm font-semibold border-b-2 border-index-sky-500 text-index-sky-300 transition";
                 archiveBtn.className = "px-5 py-3 text-sm font-semibold border-b-2 border-transparent text-zinc-400 hover:text-zinc-200 transition";
                 historyContent.classList.remove('hidden');
                 archiveContent.classList.add('hidden');
             } else {
-                archiveBtn.className = "px-5 py-3 text-sm font-semibold border-b-2 border-index-crimson text-index-crimson transition";
+                archiveBtn.className = "px-5 py-3 text-sm font-semibold border-b-2 border-index-sky-500 text-index-sky-500 transition";
                 historyBtn.className = "px-5 py-3 text-sm font-semibold border-b-2 border-transparent text-zinc-400 hover:text-zinc-200 transition";
                 archiveContent.classList.remove('hidden');
                 historyContent.classList.add('hidden');
@@ -791,8 +794,8 @@
                 bgEl.className = "bg-zinc-900 border border-amber-600 text-amber-200 px-5 py-3 rounded-lg shadow-xl flex items-center space-x-3";
                 iconEl.className = "fa-solid fa-triangle-exclamation text-amber-500 text-xl";
             } else {
-                bgEl.className = "bg-zinc-900 border border-index-crimson text-zinc-100 px-5 py-3 rounded-lg shadow-xl flex items-center space-x-3";
-                iconEl.className = "fa-solid fa-circle-check text-index-crimson text-xl";
+                bgEl.className = "bg-zinc-900 border border-index-sky-500 text-zinc-100 px-5 py-3 rounded-lg shadow-xl flex items-center space-x-3";
+                iconEl.className = "fa-solid fa-circle-check text-index-sky-500 text-xl";
             }
 
             modal.classList.remove('translate-y-20', 'opacity-0');
