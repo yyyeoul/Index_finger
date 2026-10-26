@@ -2,16 +2,16 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>The Index Prescript Generator</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts: Noto Serif KR for Gothic/Parchment feel -->
+    <!-- Google Fonts: Noto Serif KR & Cinzel -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Noto+Serif+KR:wght@300;400;600;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Noto+Serif+KR:wght@300;400;600;700;900&display=swap" rel="stylesheet">
 
     <script>
         tailwind.config = {
@@ -19,17 +19,18 @@
                 extend: {
                     colors: {
                         index: {
-                           black: '#070a12',
-                            dark: '#0d1322',
-                            card: '#131b2e',
+                            bg: '#04070d',
+                            dark: '#080d1a',
+                            card: '#0f172a',
+                            cardBorder: '#1e293b',
                             cyan: '#38bdf8',
-                            brightCyan: '#60a5fa',
-                            glowBlue: '#3b82f6',
+                            glowCyan: '#0284c7',
                             crimson: '#991b1b',
-                            brightCrimson: '#dc2626',
-                            gold: '#c5a059',
-                            parchment: '#f4efdf',
-                            text: '#d1d5db'
+                            brightCrimson: '#ef4444',
+                            gold: '#d97706',
+                            goldGlow: '#f59e0b',
+                            parchment: '#fef3c7',
+                            text: '#cbd5e1'
                         }
                     },
                     fontFamily: {
@@ -41,198 +42,259 @@
         }
     </script>
     <style>
+        /* Mobile Performance & Feel Enhancements */
+        * {
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+
         body {
-            background-color: #050811;
-            color: #d1d5db;
+            background-color: #04070d;
+            color: #cbd5e1;
             font-family: 'Noto Serif KR', serif;
-            background-image: radial-gradient(circle at 50% 20%, rgba(139, 0, 0, 0.15) 0%, transparent 60%);
+            background-image: 
+                radial-gradient(circle at 50% 0%, rgba(185, 28, 28, 0.12) 0%, transparent 70%),
+                radial-gradient(circle at 50% 100%, rgba(14, 165, 233, 0.08) 0%, transparent 60%);
+            background-attachment: fixed;
+        }
+
+        /* Glassmorphism Panel */
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
         }
 
         /* Wax Seal Stamp Animation */
         .stamp-executed {
             position: absolute;
-            transform: rotate(-12deg) scale(0.8);
             opacity: 0;
+            transform: rotate(-15deg) scale(1.4);
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            pointer-events: none;
         }
         .stamp-executed.active {
-            opacity: 0.9;
+            opacity: 0.88;
             transform: rotate(-12deg) scale(1);
         }
 
-        /* Custom Scrollbar */
+        /* Glowing Accent Borders */
+        .glow-border-cyan {
+            box-shadow: 0 0 15px -3px rgba(56, 189, 248, 0.15);
+        }
+
+        /* Custom Touch Scrollbar */
         ::-webkit-scrollbar {
-            width: 6px;
+            width: 4px;
+            height: 4px;
         }
         ::-webkit-scrollbar-track {
-            background: #0d1322;
+            background: #080d1a;
         }
         ::-webkit-scrollbar-thumb {
-            background: #1e3a8a;
-            border-radius: 3px;
+            background: #1e293b;
+            border-radius: 9999px;
         }
         ::-webkit-scrollbar-thumb:hover {
-            background: #2563eb;
+            background: #0284c7;
+        }
+
+        /* Pulse animation for active indicator */
+        @keyframes subtlePulse {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 0.9; }
+        }
+        .animate-subtle-pulse {
+            animation: subtlePulse 2.5s infinite ease-in-out;
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col justify-between selection:bg-sky-500 selection:text-white">
+<body class="min-h-screen flex flex-col justify-between selection:bg-sky-500 selection:text-white pb-safe">
 
-    <!-- Header / Navbar -->
-    <header class="border-b border-zinc-800 bg-index-dark/90 backdrop-blur sticky top-0 z-40 px-4 py-3">
-        <div class="max-w-4xl mx-auto flex justify-between items-center">
-            <div class="flex items-center space-x-3">
-                <i class="fa-solid fa-scroll text-sky-500 text-2xl"></i>
+    <!-- Header / Sticky Nav -->
+    <header class="sticky top-0 z-40 border-b border-slate-800/80 bg-index-dark/90 backdrop-blur-md px-3 sm:px-6 py-2.5 sm:py-3 transition-all duration-200">
+        <div class="max-w-4xl mx-auto flex items-center justify-between gap-2">
+            
+            <!-- Logo Section -->
+            <div class="flex items-center space-x-2.5 sm:space-x-3">
+                <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-slate-900 to-sky-950/60 border border-sky-500/30 flex items-center justify-center shrink-0 shadow-lg shadow-sky-950/40">
+                    <i class="fa-solid fa-scroll text-sky-400 text-base sm:text-lg"></i>
+                </div>
                 <div>
-                    <h1 class="font-cinzel tracking-widest text-lg md:text-xl font-bold text-gray-100">THE INDEX</h1>
-                    <p class="text-xs text-zinc-500 font-sans tracking-tight">도시의 뜻, 검지의 지령</p>
+                    <h1 class="font-cinzel tracking-widest text-base sm:text-lg font-black text-slate-100 leading-tight">THE INDEX</h1>
+                    <p class="text-[10px] sm:text-xs text-slate-400 font-serif tracking-tight">도시의 뜻, 검지의 지령</p>
                 </div>
             </div>
 
             <!-- Player Rank Badge -->
-            <div class="flex items-center space-x-3 bg-zinc-900/80 border border-zinc-800 px-3 py-1.5 rounded-lg">
+            <div class="flex items-center space-x-2 bg-slate-900/90 border border-slate-800/90 pl-2.5 pr-1.5 py-1 rounded-xl shadow-inner">
                 <div class="text-right">
-                    <div class="text-[10px] text-zinc-400 font-sans uppercase tracking-wider">현재 등급</div>
-                    <div id="user-rank-display" class="font-bold text-sm text-index-gold">없음</div>
+                    <div class="text-[9px] sm:text-[10px] text-slate-400 font-sans uppercase tracking-wider leading-none">현재 등급</div>
+                    <div id="user-rank-display" class="font-bold text-xs sm:text-sm text-amber-500 leading-tight mt-0.5">없음</div>
                 </div>
-                <div id="rank-icon-container" class="w-8 h-8 rounded bg-zinc-800 flex items-center justify-center border border-zinc-700">
-                    <i class="fa-solid fa-user-xmark text-zinc-500"></i>
+                <div id="rank-icon-container" class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-slate-800/80 flex items-center justify-center border border-slate-700/60 text-xs sm:text-sm shrink-0">
+                    <i class="fa-solid fa-user-xmark text-slate-500"></i>
                 </div>
             </div>
+
         </div>
     </header>
 
-    <!-- Main Container -->
-    <main class="max-w-4xl w-full mx-auto p-4 flex-1 space-y-6">
+    <!-- Main Content Container -->
+    <main class="max-w-4xl w-full mx-auto px-3 sm:px-6 py-4 sm:py-6 flex-1 space-y-4 sm:space-y-6">
 
         <!-- Banner / Notification Bar -->
-        <div class="bg-zinc-900/60 border border-zinc-800 rounded-xl p-4 flex flex-col md:flex-row justify-between items-center gap-4">
-            <div class="space-y-1 text-center md:text-left">
-                <div class="text-xs text-zinc-400 flex items-center justify-center md:justify-start gap-1">
-                    <i class="fa-solid fa-clock text-sky-400"></i>
-                    <span>현재 시스템 시간 (KST):</span>
-                    <span id="current-kst-time" class="font-mono text-zinc-200">-</span>
+        <div class="glass-panel border border-slate-800/90 rounded-2xl p-3.5 sm:p-5 flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 shadow-xl">
+            <div class="space-y-1">
+                <div class="text-xs text-slate-400 flex items-center gap-1.5 flex-wrap">
+                    <span class="inline-flex items-center gap-1 text-sky-400 font-medium">
+                        <i class="fa-solid fa-clock text-xs"></i> KST 시각:
+                    </span>
+                    <span id="current-kst-time" class="font-mono text-slate-200 font-bold bg-slate-900/80 px-2 py-0.5 rounded border border-slate-800 text-[11px] sm:text-xs">-</span>
                 </div>
-                <p class="text-sm text-zinc-300">
+                <p class="text-xs sm:text-sm text-slate-300 leading-snug">
                     지령은 매일 오전 09:00 KST에 새로 전달되며, 수행 후 10분의 대기시간이 필요합니다.
                 </p>
             </div>
             
-            <button onclick="toggleDevPanel()" class="text-xs bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-3 py-2 rounded-md border border-zinc-700 transition flex items-center gap-2 shrink-0">
-                <i class="fa-solid fa-sliders"></i>
+            <button onclick="toggleDevPanel()" class="active:scale-95 text-xs bg-slate-800/80 hover:bg-slate-700/80 text-slate-300 px-3 py-2.5 sm:py-2 rounded-xl border border-slate-700/80 transition flex items-center justify-center gap-2 shrink-0 touch-manipulation min-h-[40px]">
+                <i class="fa-solid fa-sliders text-sky-400"></i>
                 <span>개발자 / 테스트 조작</span>
             </button>
         </div>
 
         <!-- Dev Controls Panel (Hidden by Default) -->
-        <div id="dev-panel" class="hidden bg-sky-950/20 border border-sky-900/40 rounded-xl p-4 space-y-3">
-            <div class="flex justify-between items-center border-b border-sky-900/30 pb-2">
-                <span class="text-xs font-bold text-sky-400 uppercase tracking-wider"><i class="fa-solid fa-bug mr-1"></i> 테스트 제어판 (시간/지령 강제 조작)</span>
-                <span class="text-[11px] text-zinc-500">시간 가속 및 리셋 테스트용</span>
+        <div id="dev-panel" class="hidden bg-sky-950/20 border border-sky-900/40 rounded-2xl p-4 space-y-3 backdrop-blur-md">
+            <div class="flex justify-between items-center border-b border-sky-900/40 pb-2">
+                <span class="text-xs font-bold text-sky-400 uppercase tracking-wider flex items-center gap-1.5">
+                    <i class="fa-solid fa-bug"></i> 테스트 제어판 (강제 조작)
+                </span>
+                <span class="text-[10px] text-slate-400">시뮬레이션 모드</span>
             </div>
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
-                <button onclick="addTime(10)" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-200 py-2 px-3 rounded border border-zinc-700">+10분 가속</button>
-                <button onclick="skipToTomorrow9AM()" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-200 py-2 px-3 rounded border border-zinc-700">다음날 09시 이동</button>
-                <button onclick="forcePromotionCheck()" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-200 py-2 px-3 rounded border border-zinc-700">승급 확률 시도</button>
-                <button onclick="resetAllData()" class="bg-sky-900/40 hover:bg-sky-900/60 text-sky-200 py-2 px-3 rounded border border-sky-700">데이터 초기화</button>
+                <button onclick="addTime(10)" class="active:scale-95 bg-slate-800 hover:bg-slate-700 text-slate-200 py-2.5 px-3 rounded-xl border border-slate-700 transition">
+                    +10분 가속
+                </button>
+                <button onclick="skipToTomorrow9AM()" class="active:scale-95 bg-slate-800 hover:bg-slate-700 text-slate-200 py-2.5 px-3 rounded-xl border border-slate-700 transition">
+                    내일 09시 이동
+                </button>
+                <button onclick="forcePromotionCheck()" class="active:scale-95 bg-slate-800 hover:bg-slate-700 text-slate-200 py-2.5 px-3 rounded-xl border border-slate-700 transition">
+                    승급 확률 시도
+                </button>
+                <button onclick="resetAllData()" class="active:scale-95 bg-rose-950/40 hover:bg-rose-900/60 text-rose-200 py-2.5 px-3 rounded-xl border border-rose-800/60 transition col-span-2 sm:col-span-1">
+                    데이터 초기화
+                </button>
             </div>
         </div>
 
-        <!-- Rank Status & Progress Summary -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Rank Status & Progress Summary Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+            
             <!-- Daily Quota Card -->
-            <div class="bg-index-card border border-zinc-800 rounded-xl p-4 space-y-2">
+            <div class="glass-panel border border-slate-800/80 rounded-2xl p-4 space-y-3 shadow-lg">
                 <div class="flex justify-between items-center text-xs">
-                    <span class="text-zinc-400">오늘의 지령 한도</span>
-                    <span id="daily-quota-text" class="text-index-gold font-bold">0 / 1 완료</span>
+                    <span class="text-slate-400 font-medium">오늘의 지령 한도</span>
+                    <span id="daily-quota-text" class="text-amber-400 font-bold font-mono text-sm">0 / 1 완료</span>
                 </div>
-                <div class="w-full bg-zinc-900 h-2 rounded-full overflow-hidden border border-zinc-800">
-                    <div id="daily-quota-bar" class="bg-gradient-to-r from-sky-600 to-sky-600 h-full w-0 transition-all duration-300"></div>
+                <!-- Progress Bar -->
+                <div class="w-full bg-slate-900 h-2.5 rounded-full overflow-hidden border border-slate-800/90 p-0.5">
+                    <div id="daily-quota-bar" class="bg-gradient-to-r from-sky-600 via-sky-500 to-amber-500 h-full w-0 rounded-full transition-all duration-500 shadow-sm"></div>
                 </div>
-                <div class="text-[11px] text-zinc-500 flex justify-between">
+                <div class="text-[11px] text-slate-400 flex justify-between items-center pt-0.5">
                     <span>수행자: 하루 2개</span>
                     <span>대행자: 하루 3개</span>
                 </div>
             </div>
 
             <!-- Current Rank Status Info -->
-            <div class="bg-index-card border border-zinc-800 rounded-xl p-4 space-y-2 flex flex-col justify-between">
+            <div class="glass-panel border border-slate-800/80 rounded-2xl p-4 space-y-2 flex flex-col justify-between shadow-lg">
                 <div class="flex justify-between items-center text-xs">
-                    <span class="text-zinc-400">지령 수령 자격</span>
-                    <span id="rank-detail-badge" class="text-zinc-200 font-bold">수행 대기 중</span>
+                    <span class="text-slate-400 font-medium">지령 수령 자격</span>
+                    <span id="rank-detail-badge" class="text-slate-200 font-bold bg-slate-800 px-2 py-0.5 rounded-md border border-slate-700 text-[11px]">수행 대기 중</span>
                 </div>
-                <p class="text-xs text-zinc-400 leading-relaxed">
+                <p class="text-xs text-slate-400 leading-relaxed">
                     지령을 성실히 수행하면 도시의 뜻에 따라 승급이 이루어집니다.
                 </p>
             </div>
+
         </div>
 
         <!-- Prescripts Active Section -->
-        <div class="space-y-4">
-            <div class="flex justify-between items-center border-b border-zinc-800 pb-2">
-                <h2 class="text-lg font-bold text-zinc-100 flex items-center gap-2">
+        <div class="space-y-3 sm:space-y-4">
+            <div class="flex justify-between items-center border-b border-slate-800/80 pb-2 px-1">
+                <h2 class="text-base sm:text-lg font-bold text-slate-100 flex items-center gap-2 font-serif">
                     <i class="fa-solid fa-envelope-open-text text-sky-400"></i>
                     <span>오늘 도착한 지령</span>
                 </h2>
                 <span id="cooldown-timer-status" class="text-xs text-amber-400 font-mono"></span>
             </div>
 
-            <!-- Prescript Cards Grid -->
+            <!-- Prescript Cards Container -->
             <div id="prescript-cards-container" class="grid grid-cols-1 gap-4">
                 <!-- Dynamically populated cards -->
             </div>
         </div>
 
-        <!-- Tabs Section: History (10 items pagination) & Completed Prescripts Archive -->
-        <div class="bg-index-card border border-zinc-800 rounded-xl overflow-hidden mt-8">
-            <div class="flex border-b border-zinc-800 bg-zinc-900/50">
-                <button onclick="switchTab('history')" id="tab-btn-history" class="px-5 py-3 text-sm font-semibold border-b-2 border-sky-500 text-sky-400 transition">
-                    <i class="fa-solid fa-clock-rotate-left mr-1.5"></i>수행 기록 (<span id="history-total-count">0</span>)
+        <!-- Tabs Section: History & Archive -->
+        <div class="glass-panel border border-slate-800/90 rounded-2xl overflow-hidden shadow-xl mt-6">
+            
+            <!-- Mobile Optimized Tab Buttons -->
+            <div class="flex border-b border-slate-800/90 bg-slate-900/60">
+                <button onclick="switchTab('history')" id="tab-btn-history" class="flex-1 py-3 px-3 text-xs sm:text-sm font-semibold border-b-2 border-sky-400 text-sky-400 transition flex items-center justify-center gap-1.5 active:bg-slate-800/40 min-h-[48px]">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    <span>수행 기록</span>
+                    <span class="bg-slate-800 px-1.5 py-0.2 text-[10px] rounded-full border border-slate-700" id="history-total-count">0</span>
                 </button>
-                <button onclick="switchTab('archive')" id="tab-btn-archive" class="px-5 py-3 text-sm font-semibold border-b-2 border-transparent text-zinc-400 hover:text-zinc-200 transition">
-                    <i class="fa-solid fa-box-archive mr-1.5"></i>수행한 지령 보관소 (<span id="archive-count">0</span>)
+                <button onclick="switchTab('archive')" id="tab-btn-archive" class="flex-1 py-3 px-3 text-xs sm:text-sm font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition flex items-center justify-center gap-1.5 active:bg-slate-800/40 min-h-[48px]">
+                    <i class="fa-solid fa-box-archive"></i>
+                    <span>보관소</span>
+                    <span class="bg-slate-800 px-1.5 py-0.2 text-[10px] rounded-full border border-slate-700" id="archive-count">0</span>
                 </button>
             </div>
 
-            <!-- Tab 1: History with Pagination (10 per page) -->
-            <div id="tab-content-history" class="p-4 space-y-4">
-                <div id="history-list" class="space-y-2 min-h-[220px]">
-                    <div class="text-center text-sm text-zinc-500 py-8">아직 수행한 지령이 없습니다.</div>
+            <!-- Tab 1: History with Pagination -->
+            <div id="tab-content-history" class="p-3.5 sm:p-5 space-y-3">
+                <div id="history-list" class="space-y-2.5 min-h-[180px]">
+                    <div class="text-center text-xs sm:text-sm text-slate-500 py-10">아직 수행한 지령이 없습니다.</div>
                 </div>
 
                 <!-- Pagination Controls -->
-                <div id="history-pagination" class="flex items-center justify-between border-t border-zinc-800/80 pt-3 text-xs text-zinc-400 hidden">
-                    <span id="history-page-info">1 / 1 페이지</span>
+                <div id="history-pagination" class="flex items-center justify-between border-t border-slate-800/80 pt-3 text-xs text-slate-400 hidden">
+                    <span id="history-page-info" class="font-mono">1 / 1 페이지</span>
                     <div class="flex space-x-2">
-                        <button onclick="changeHistoryPage(-1)" id="btn-prev-page" class="px-3 py-1 bg-zinc-900 border border-zinc-800 rounded hover:bg-zinc-800 disabled:opacity-40 disabled:hover:bg-zinc-900">이전</button>
-                        <button onclick="changeHistoryPage(1)" id="btn-next-page" class="px-3 py-1 bg-zinc-900 border border-zinc-800 rounded hover:bg-zinc-800 disabled:opacity-40 disabled:hover:bg-zinc-900">다음</button>
+                        <button onclick="changeHistoryPage(-1)" id="btn-prev-page" class="active:scale-95 px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg hover:bg-slate-700 disabled:opacity-30 disabled:hover:bg-slate-800 min-h-[36px] min-w-[60px] font-medium">이전</button>
+                        <button onclick="changeHistoryPage(1)" id="btn-next-page" class="active:scale-95 px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg hover:bg-slate-700 disabled:opacity-30 disabled:hover:bg-slate-800 min-h-[36px] min-w-[60px] font-medium">다음</button>
                     </div>
                 </div>
             </div>
 
             <!-- Tab 2: Executed Prescript Archive -->
-            <div id="tab-content-archive" class="p-4 hidden space-y-4">
-                <div id="archive-list" class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-80 overflow-y-auto pr-1">
+            <div id="tab-content-archive" class="p-3.5 sm:p-5 hidden space-y-3">
+                <div id="archive-list" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-80 overflow-y-auto pr-1">
                     <!-- Executed prescripts stored chronologically -->
                 </div>
             </div>
+
         </div>
 
     </main>
 
     <!-- Footer -->
-    <footer class="border-t border-zinc-900 bg-index-dark py-4 text-center text-xs text-zinc-600">
-        <p>Project Moon 'The Index' Prescript Generator Simulation</p>
-        <p class="mt-1 text-[11px] text-zinc-700">지령은 절대적이며, 오직 수행만이 존재합니다.</p>
+    <footer class="border-t border-slate-900 bg-index-dark/80 py-5 text-center text-xs text-slate-500 px-4 mt-6">
+        <p class="font-serif tracking-wider">Project Moon 'The Index' Prescript Generator Simulation</p>
+        <p class="mt-1 text-[11px] text-slate-600">지령은 절대적이며, 오직 수행만이 존재합니다.</p>
     </footer>
 
     <!-- Toast Modal -->
-    <div id="toast-modal" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
-        <div id="toast-bg" class="bg-zinc-900 border border-sky-500 text-zinc-100 px-5 py-3 rounded-lg shadow-xl flex items-center space-x-3">
-            <i id="toast-icon" class="fa-solid fa-circle-check text-index-text-xl"></i>
-            <div>
-                <div id="toast-title" class="font-bold text-sm">지령 수행 완료</div>
-                <div id="toast-msg" class="text-xs text-zinc-400">검지의 뜻이 이뤄졌습니다.</div>
+    <div id="toast-modal" class="fixed bottom-6 left-4 right-4 sm:left-auto sm:right-6 sm:w-96 z-50 transform translate-y-24 opacity-0 transition-all duration-300 pointer-events-none">
+        <div id="toast-bg" class="glass-panel border border-sky-500/50 text-slate-100 p-4 rounded-2xl shadow-2xl flex items-center space-x-3.5">
+            <div id="toast-icon-wrapper" class="w-10 h-10 rounded-xl bg-sky-950/80 border border-sky-500/40 flex items-center justify-center shrink-0">
+                <i id="toast-icon" class="fa-solid fa-circle-check text-sky-400 text-lg"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+                <div id="toast-title" class="font-bold text-sm text-slate-100 truncate">지령 수행 완료</div>
+                <div id="toast-msg" class="text-xs text-slate-300 mt-0.5 leading-snug">검지의 뜻이 이뤄졌습니다.</div>
             </div>
         </div>
     </div>
@@ -240,16 +302,7 @@
     <!-- MAIN GAME LOGIC SCRIPT -->
     <script>
         /* =================================================================================
-         * [지령 라이브러리 (PRESCRIPT LIBRARY) 작성 및 편집 가이드]
-         * =================================================================================
-         * 사용자가 추후 약 1,000개 이상의 지령 목록을 입력할 때 이 배열에 추가하시면 됩니다.
-         * 
-         * [작성 규칙 및 팁]
-         * 1. 큰따옴표(") 혹은 작은따옴표(')로 감싸고 쉼표(,)로 구분하십시오.
-         * 2. 문자열 내에 따옴표가 들어갈 경우 역슬래시(\')를 사용하십시오.
-         * 3. 카테고리별로 주석(/* 일상적 지령 * / 등)을 달아서 구분하면 관리가 용이합니다.
-         * 4. KST 기준 매일 식별자를 기반으로 중복 없이 렌더링되므로 개수가 많을수록 
-         *    중복 방지 효과(7일 규칙)가 극대화됩니다.
+         * [지령 라이브러리 (PRESCRIPT LIBRARY)]
          * =================================================================================
          */
         const PRESCRIPT_LIBRARY = [
@@ -312,7 +365,6 @@
             return null;
         }
 
-        // Helper to generate concealed UUID
         function generateUUID() {
             return 'idx-' + 'xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
                 const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
@@ -320,16 +372,13 @@
             });
         }
 
-        // Single Game State Object
         let gameState = {
             uuid: '',
-            rank: 'NONE', // 'NONE' (없음), 'PROSELYTE' (수행자), 'MESSENGER' (대행자)
+            rank: 'NONE', // 'NONE', 'PROSELYTE', 'MESSENGER'
             totalExecutions: 0,
-            rankExecutions: 0, // Background pity counter
-            history: [], // Array of { id, text, date, rank }
-            archive: [], // Array of executed prescript texts in chronological order
-            
-            // Time & Daily Tracking
+            rankExecutions: 0,
+            history: [],
+            archive: [],
             currentSimulatedTime: null,
             lastResetDateStr: '',
             dailyIssuedCount: 0,
@@ -341,9 +390,9 @@
         const ITEMS_PER_PAGE = 10;
 
         const RANKS = {
-            NONE: { name: '없음', quota: 1, prob: 0.075, pity: 20, icon: 'fa-user-xmark', color: 'text-zinc-400' },
-            PROSELYTE: { name: '수행자', quota: 2, prob: 0.010, pity: 100, icon: 'fa-user-shield', color: 'text-index-gold' },
-            MESSENGER: { name: '대행자', quota: 3, prob: 0.0, pity: 0, icon: 'fa-crown', color: 'text-sky-500' }
+            NONE: { name: '없음', quota: 1, prob: 0.075, pity: 20, icon: 'fa-user-xmark', color: 'text-slate-400' },
+            PROSELYTE: { name: '수행자', quota: 2, prob: 0.010, pity: 100, icon: 'fa-user-shield', color: 'text-amber-400' },
+            MESSENGER: { name: '대행자', quota: 3, prob: 0.0, pity: 0, icon: 'fa-crown', color: 'text-sky-400' }
         };
 
         function getKSTDate() {
@@ -368,13 +417,11 @@
             return x - Math.floor(x);
         }
 
-        // Storage Management (LocalStorage for progress + Invisible Cookie for UUID)
         function saveState() {
             localStorage.setItem('index_prescript_game_state_v2', JSON.stringify(gameState));
         }
 
         function loadState() {
-            // Retrieve UUID secretly from cookie
             let cookieUUID = getCookie('index_user_uuid');
             if (!cookieUUID) {
                 cookieUUID = generateUUID();
@@ -385,7 +432,7 @@
             if (saved) {
                 try {
                     gameState = JSON.parse(saved);
-                    gameState.uuid = cookieUUID; // Ensure hidden UUID sync
+                    gameState.uuid = cookieUUID;
                 } catch(e) {
                     initNewUser(cookieUUID);
                 }
@@ -411,7 +458,6 @@
             saveState();
         }
 
-        // Daily Check at 09:00 KST
         function checkDailyReset() {
             const kst = getKSTDate();
             const logicalDate = new Date(kst);
@@ -430,7 +476,6 @@
             }
         }
 
-        // Issue Prescripts based on Seed and 7-day exclusion rule
         function issueNextPrescript() {
             const rankInfo = RANKS[gameState.rank];
             if (gameState.dailyIssuedCount >= rankInfo.quota) return;
@@ -473,7 +518,6 @@
             saveState();
         }
 
-        // Execute Action
         function executePrescript(prescriptId) {
             const target = gameState.dailyPrescripts.find(p => p.id === prescriptId);
             if (!target || target.executed) return;
@@ -492,7 +536,6 @@
 
             const timeStr = kst.toLocaleString('ko-KR', { hour12: false });
             
-            // Push to History (Unshift for recent first)
             gameState.history.unshift({
                 id: target.id,
                 text: target.text,
@@ -500,7 +543,6 @@
                 rank: RANKS[gameState.rank].name
             });
 
-            // Push to Archive (Push for chronological order)
             gameState.archive.push({
                 id: target.id,
                 text: target.text,
@@ -509,10 +551,8 @@
 
             showToast("지령 수행 완료", "지령의 뜻이 성공적으로 이행되었습니다.");
 
-            // Cooldown Rule: 10 minutes (600,000 ms) after execution
             const rankInfo = RANKS[gameState.rank];
             if (gameState.dailyIssuedCount < rankInfo.quota) {
-                const nextUnlockTime = kst.getTime() + (10 * 60 * 1000);
                 setTimeout(() => {
                     issueNextPrescript();
                     updateUI();
@@ -524,7 +564,6 @@
             updateUI();
         }
 
-        // Silent Background Promotion Check
         function checkPromotion() {
             if (gameState.rank === 'MESSENGER') return;
 
@@ -546,7 +585,7 @@
                 }
                 gameState.rankExecutions = 0;
 
-                showToast("승급!", `지령의 뜻에 따라 [${prevRankName}]에서 [${RANKS[gameState.rank].name}](으)로 승급하셨습니다.`);
+                showToast("승급 확정!", `도시의 뜻에 따라 [${prevRankName}]에서 [${RANKS[gameState.rank].name}](으)로 승급하였습니다.`);
                 
                 checkDailyReset();
                 if (gameState.dailyIssuedCount < RANKS[gameState.rank].quota) {
@@ -555,7 +594,6 @@
             }
         }
 
-        // UI Updates
         function updateUI() {
             const kst = getKSTDate();
             document.getElementById('current-kst-time').innerText = kst.toLocaleString('ko-KR', { hour12: false });
@@ -563,7 +601,7 @@
             // Rank Display
             const rankObj = RANKS[gameState.rank];
             document.getElementById('user-rank-display').innerText = rankObj.name;
-            document.getElementById('user-rank-display').className = `font-bold text-sm ${rankObj.color}`;
+            document.getElementById('user-rank-display').className = `font-bold text-xs sm:text-sm ${rankObj.color}`;
             document.getElementById('rank-icon-container').innerHTML = `<i class="fa-solid ${rankObj.icon} ${rankObj.color}"></i>`;
 
             // Quota Bar
@@ -572,7 +610,7 @@
             const quotaPercent = (executedTodayCount / rankObj.quota) * 100;
             document.getElementById('daily-quota-bar').style.width = `${Math.min(quotaPercent, 100)}%`;
 
-            document.getElementById('rank-detail-badge').innerText = `현재 등급: ${rankObj.name}`;
+            document.getElementById('rank-detail-badge').innerText = `자격: ${rankObj.name}`;
 
             renderPrescriptCards();
             renderHistory();
@@ -585,10 +623,10 @@
 
             if (gameState.dailyPrescripts.length === 0) {
                 container.innerHTML = `
-                    <div class="bg-index-card border border-zinc-800/80 rounded-xl p-8 text-center space-y-2">
-                        <i class="fa-solid fa-hourglass-start text-3xl text-zinc-600 mb-2"></i>
-                        <div class="text-zinc-300 font-semibold">도착한 지령이 없습니다.</div>
-                        <div class="text-xs text-zinc-500">매일 오전 09:00 에 새로운 지령이 전달됩니다.</div>
+                    <div class="glass-panel border border-slate-800/80 rounded-2xl p-8 text-center space-y-2 shadow-inner">
+                        <i class="fa-solid fa-hourglass-start text-3xl text-slate-600 mb-2 animate-pulse"></i>
+                        <div class="text-slate-300 font-semibold text-sm">도착한 지령이 없습니다.</div>
+                        <div class="text-xs text-slate-500">매일 오전 09:00 KST 에 새로운 지령이 전달됩니다.</div>
                     </div>
                 `;
                 return;
@@ -598,7 +636,7 @@
 
             gameState.dailyPrescripts.forEach((item, idx) => {
                 const card = document.createElement('div');
-                card.className = "relative bg-index-card border border-zinc-800 rounded-xl p-6 shadow-xl space-y-4 overflow-hidden transition-all duration-300 hover:border-zinc-700";
+                card.className = "relative glass-panel border border-slate-800/90 rounded-2xl p-4 sm:p-6 shadow-xl space-y-3.5 overflow-hidden transition-all duration-300 hover:border-slate-700/80 glow-border-cyan";
 
                 const isLockedTime = kst.getTime() < item.availableAt;
                 const remainingSecs = Math.max(0, Math.ceil((item.availableAt - kst.getTime()) / 1000));
@@ -606,41 +644,42 @@
                 const remainingSecsRem = remainingSecs % 60;
 
                 card.innerHTML = `
-                    <div class="stamp-executed ${item.executed ? 'active' : ''} absolute right-4 bottom-3 pointer-events-none select-none">
-                        <div class="w-28 h-28 border-4 border-sky-500 rounded-full flex flex-col items-center justify-center text-sky-200 font-black tracking-tighter opacity-80 rotate-[-15deg]">
-                            <span class="text-xs border-b border-sky-500 pb-0.5 uppercase">THE INDEX</span>
-                            <span class="text-sm font-serif my-0.5">수행됨</span>
-                            <span class="text-[9px]">${gameState.lastResetDateStr}</span>
+                    <!-- Wax Seal Stamp -->
+                    <div class="stamp-executed ${item.executed ? 'active' : ''} absolute -right-2 -bottom-2 sm:right-4 sm:bottom-2 select-none z-10">
+                        <div class="w-24 h-24 sm:w-28 sm:h-28 border-4 border-sky-400 rounded-full flex flex-col items-center justify-center text-sky-300 font-black tracking-tighter bg-sky-950/30 backdrop-blur-xs">
+                            <span class="text-[10px] sm:text-xs border-b border-sky-400/80 pb-0.5 uppercase">THE INDEX</span>
+                            <span class="text-xs sm:text-sm font-serif my-0.5">수행됨</span>
+                            <span class="text-[8px] sm:text-[9px] font-mono">${gameState.lastResetDateStr}</span>
                         </div>
                     </div>
 
-                    <div class="flex justify-between items-start">
+                    <div class="flex justify-between items-center relative z-2">
                         <div class="flex items-center space-x-2">
-                            <span class="bg-zinc-900 border border-zinc-800 text-index-gold text-xs px-2.5 py-1 rounded font-mono">
+                            <span class="bg-slate-900/90 border border-slate-700/80 text-amber-400 text-[11px] px-2.5 py-0.5 rounded-lg font-mono font-bold">
                                 지령 #${idx + 1}
                             </span>
-                            ${item.executed ? '<span class="bg-sky-800/60 border border-sky-800 text-sky-400 text-xs px-2 py-0.5 rounded">이행 완료</span>' : ''}
+                            ${item.executed ? '<span class="bg-sky-950/80 border border-sky-800 text-sky-400 text-[10px] px-2 py-0.5 rounded-md font-medium">이행 완료</span>' : ''}
                         </div>
                     </div>
 
-                    <div class="py-2">
-                        <p class="text-base md:text-lg text-zinc-100 font-serif leading-relaxed ${item.executed ? 'line-through text-zinc-500' : ''}">
+                    <div class="py-1 sm:py-2 relative z-2">
+                        <p class="text-base sm:text-lg text-slate-100 font-serif leading-relaxed ${item.executed ? 'line-through text-slate-500' : ''}">
                             "${item.text}"
                         </p>
                     </div>
 
-                    <div class="flex items-center justify-between border-t border-zinc-800/80 pt-4">
-                        <div class="text-xs text-zinc-500">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between border-t border-slate-800/80 pt-3.5 gap-2.5 relative z-2">
+                        <div class="text-xs text-slate-400">
                             ${isLockedTime ? 
-                                `<span class="text-amber-400 font-mono"><i class="fa-solid fa-spinner fa-spin mr-1"></i> 다음 지령 대기 중: ${remainingMins}분 ${remainingSecsRem}초</span>` 
-                                : (item.executed ? '지령의 뜻이 이뤄졌습니다.' : '지령을 이행하신 후 수행 완료 버튼을 누르십시오.')}
+                                `<span class="text-amber-400 font-mono flex items-center gap-1.5"><i class="fa-solid fa-spinner fa-spin text-xs"></i> 다음 지령 대기 중: ${remainingMins}분 ${remainingSecsRem}초</span>` 
+                                : (item.executed ? '<span class="text-slate-500">지령의 뜻이 이뤄졌습니다.</span>' : '지령을 이행하신 후 수행 완료 버튼을 누르십시오.')}
                         </div>
 
                         ${!item.executed ? `
                             <button onclick="executePrescript('${item.id}')" 
                                 ${isLockedTime ? 'disabled' : ''}
-                                class="bg-sky-900 hover:bg-sky-500 disabled:bg-zinc-800 disabled:text-zinc-600 disabled:border-zinc-800 border border-sky-900 text-white text-xs font-bold px-4 py-2 rounded-lg shadow transition flex items-center gap-1.5">
-                                <i class="fa-solid fa-stamp"></i>
+                                class="active:scale-95 bg-gradient-to-r from-sky-900 to-sky-700 hover:from-sky-800 hover:to-sky-600 disabled:from-slate-800 disabled:to-slate-800 disabled:text-slate-600 border border-sky-600/50 disabled:border-slate-800 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-lg transition flex items-center justify-center gap-2 min-h-[42px] touch-manipulation">
+                                <i class="fa-solid fa-stamp text-sky-300"></i>
                                 <span>수행 완료</span>
                             </button>
                         ` : ''}
@@ -650,14 +689,13 @@
             });
         }
 
-        // Render History with Pagination (10 per page)
         function renderHistory() {
             const list = document.getElementById('history-list');
             const total = gameState.history.length;
             document.getElementById('history-total-count').innerText = total;
 
             if (total === 0) {
-                list.innerHTML = `<div class="text-center text-sm text-zinc-500 py-8">아직 수행한 지령이 없습니다.</div>`;
+                list.innerHTML = `<div class="text-center text-xs sm:text-sm text-slate-500 py-8">아직 수행한 지령이 없습니다.</div>`;
                 document.getElementById('history-pagination').classList.add('hidden');
                 return;
             }
@@ -672,16 +710,17 @@
             const pageItems = gameState.history.slice(startIdx, startIdx + ITEMS_PER_PAGE);
 
             list.innerHTML = pageItems.map(item => `
-                <div class="bg-zinc-900/80 border border-zinc-800 p-3 rounded-lg flex justify-between items-center text-xs">
-                    <div class="space-y-1">
-                        <div class="text-zinc-200 font-serif">"${item.text}"</div>
-                        <div class="text-[11px] text-zinc-500">${item.date} (${item.rank})</div>
+                <div class="bg-slate-900/60 border border-slate-800/90 p-3 rounded-xl flex justify-between items-center gap-2 text-xs">
+                    <div class="space-y-1 min-w-0 flex-1">
+                        <div class="text-slate-200 font-serif truncate">"${item.text}"</div>
+                        <div class="text-[10px] text-slate-500 font-mono">${item.date} (${item.rank})</div>
                     </div>
-                    <span class="text-sky-500 font-bold shrink-0 ml-2"><i class="fa-solid fa-circle-check mr-1"></i>수행됨</span>
+                    <span class="text-sky-400 font-bold shrink-0 text-[11px] bg-sky-950/60 px-2 py-1 rounded-md border border-sky-900/50 flex items-center gap-1">
+                        <i class="fa-solid fa-check text-[10px]"></i> 수행됨
+                    </span>
                 </div>
             `).join('');
 
-            // Pagination buttons & status
             document.getElementById('history-page-info').innerText = `${currentHistoryPage} / ${totalPages} 페이지`;
             document.getElementById('btn-prev-page').disabled = (currentHistoryPage === 1);
             document.getElementById('btn-next-page').disabled = (currentHistoryPage === totalPages);
@@ -692,29 +731,27 @@
             renderHistory();
         }
 
-        // Render Executed Prescripts Archive
         function renderArchive() {
             const list = document.getElementById('archive-list');
             const countEl = document.getElementById('archive-count');
             countEl.innerText = gameState.archive.length;
 
             if (gameState.archive.length === 0) {
-                list.innerHTML = `<div class="col-span-2 text-center text-sm text-zinc-500 py-8">보관된 지령이 없습니다.</div>`;
+                list.innerHTML = `<div class="col-span-full text-center text-xs sm:text-sm text-slate-500 py-8">보관된 지령이 없습니다.</div>`;
                 return;
             }
 
             list.innerHTML = gameState.archive.map((item, idx) => `
-                <div class="bg-zinc-900/60 border border-zinc-800/80 p-3 rounded-lg flex flex-col justify-between text-xs space-y-2">
-                    <div class="flex items-center justify-between text-[11px] text-index-gold font-mono border-b border-zinc-800 pb-1">
+                <div class="bg-slate-900/40 border border-slate-800/80 p-3 rounded-xl flex flex-col justify-between text-xs space-y-1.5">
+                    <div class="flex items-center justify-between text-[10px] text-amber-400/90 font-mono border-b border-slate-800/80 pb-1">
                         <span>기록 #${idx + 1}</span>
-                        <span class="text-zinc-500">${item.date.split(' ')[0]}</span>
+                        <span class="text-slate-500">${item.date.split(' ')[0]}</span>
                     </div>
-                    <div class="text-zinc-300 font-serif leading-snug">"${item.text}"</div>
+                    <div class="text-slate-300 font-serif leading-snug">"${item.text}"</div>
                 </div>
             `).join('');
         }
 
-        // Dev Tools
         function toggleDevPanel() {
             const panel = document.getElementById('dev-panel');
             panel.classList.toggle('hidden');
@@ -738,7 +775,7 @@
 
             checkDailyReset();
             updateUI();
-            showToast("시간 조작", "다음 날 오전 09:00 KST로 이동했습니다.");
+            showToast("시간 조작", "내일 오전 09:00 KST로 이동했습니다.");
         }
 
         function forcePromotionCheck() {
@@ -758,7 +795,6 @@
             }
         }
 
-        // Tab Switching
         function switchTab(tabName) {
             const historyBtn = document.getElementById('tab-btn-history');
             const archiveBtn = document.getElementById('tab-btn-archive');
@@ -766,19 +802,18 @@
             const archiveContent = document.getElementById('tab-content-archive');
 
             if (tabName === 'history') {
-                historyBtn.className = "px-5 py-3 text-sm font-semibold border-b-2 border-index-sky-500 text-index-sky-300 transition";
-                archiveBtn.className = "px-5 py-3 text-sm font-semibold border-b-2 border-transparent text-zinc-400 hover:text-zinc-200 transition";
+                historyBtn.className = "flex-1 py-3 px-3 text-xs sm:text-sm font-semibold border-b-2 border-sky-400 text-sky-400 transition flex items-center justify-center gap-1.5 active:bg-slate-800/40 min-h-[48px]";
+                archiveBtn.className = "flex-1 py-3 px-3 text-xs sm:text-sm font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition flex items-center justify-center gap-1.5 active:bg-slate-800/40 min-h-[48px]";
                 historyContent.classList.remove('hidden');
                 archiveContent.classList.add('hidden');
             } else {
-                archiveBtn.className = "px-5 py-3 text-sm font-semibold border-b-2 border-index-sky-500 text-index-sky-500 transition";
-                historyBtn.className = "px-5 py-3 text-sm font-semibold border-b-2 border-transparent text-zinc-400 hover:text-zinc-200 transition";
+                archiveBtn.className = "flex-1 py-3 px-3 text-xs sm:text-sm font-semibold border-b-2 border-sky-400 text-sky-400 transition flex items-center justify-center gap-1.5 active:bg-slate-800/40 min-h-[48px]";
+                historyBtn.className = "flex-1 py-3 px-3 text-xs sm:text-sm font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition flex items-center justify-center gap-1.5 active:bg-slate-800/40 min-h-[48px]";
                 archiveContent.classList.remove('hidden');
                 historyContent.classList.add('hidden');
             }
         }
 
-        // Toast Notification
         let toastTimeout;
         function showToast(title, msg, isError = false) {
             const modal = document.getElementById('toast-modal');
@@ -786,29 +821,31 @@
             const msgEl = document.getElementById('toast-msg');
             const iconEl = document.getElementById('toast-icon');
             const bgEl = document.getElementById('toast-bg');
+            const wrapper = document.getElementById('toast-icon-wrapper');
 
             titleEl.innerText = title;
             msgEl.innerText = msg;
 
             if (isError) {
-                bgEl.className = "bg-zinc-900 border border-amber-600 text-amber-200 px-5 py-3 rounded-lg shadow-xl flex items-center space-x-3";
-                iconEl.className = "fa-solid fa-triangle-exclamation text-amber-500 text-xl";
+                bgEl.className = "glass-panel border border-amber-500/50 text-slate-100 p-4 rounded-2xl shadow-2xl flex items-center space-x-3.5";
+                wrapper.className = "w-10 h-10 rounded-xl bg-amber-950/80 border border-amber-500/40 flex items-center justify-center shrink-0";
+                iconEl.className = "fa-solid fa-triangle-exclamation text-amber-400 text-lg";
             } else {
-                bgEl.className = "bg-zinc-900 border border-index-sky-500 text-zinc-100 px-5 py-3 rounded-lg shadow-xl flex items-center space-x-3";
-                iconEl.className = "fa-solid fa-circle-check text-index-sky-500 text-xl";
+                bgEl.className = "glass-panel border border-sky-500/50 text-slate-100 p-4 rounded-2xl shadow-2xl flex items-center space-x-3.5";
+                wrapper.className = "w-10 h-10 rounded-xl bg-sky-950/80 border border-sky-500/40 flex items-center justify-center shrink-0";
+                iconEl.className = "fa-solid fa-circle-check text-sky-400 text-lg";
             }
 
-            modal.classList.remove('translate-y-20', 'opacity-0');
+            modal.classList.remove('translate-y-24', 'opacity-0');
             modal.classList.add('translate-y-0', 'opacity-100');
 
             clearTimeout(toastTimeout);
             toastTimeout = setTimeout(() => {
                 modal.classList.remove('translate-y-0', 'opacity-100');
-                modal.classList.add('translate-y-20', 'opacity-0');
-            }, 3000);
+                modal.classList.add('translate-y-24', 'opacity-0');
+            }, 3200);
         }
 
-        // Init App
         window.onload = function() {
             loadState();
             checkDailyReset();
