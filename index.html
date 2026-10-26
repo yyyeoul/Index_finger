@@ -218,6 +218,16 @@
             animation: scanline 8s linear infinite;
             pointer-events: none;
         }
+
+        @keyframes pulseWarning {
+            0%, 100% { box-shadow: 0 0 15px rgba(225, 29, 72, 0.4); border-color: rgba(225, 29, 72, 0.8); }
+            50% { box-shadow: 0 0 30px rgba(225, 29, 72, 0.9); border-color: rgba(225, 29, 72, 1); }
+        }
+
+        .warning-card-border {
+            animation: pulseWarning 1.5s infinite ease-in-out;
+            background-color: rgba(158, 42, 43, 0.08) !important;
+        }
     </style>
 </head>
 <body class="theme-ivory min-h-screen flex flex-col justify-between selection:bg-sky-500 selection:text-white pb-safe transition-colors duration-300">
@@ -241,13 +251,15 @@
             </div>
 
             <!-- Player Rank Badge -->
-            <div id="rank-badge-box" class="flex items-center space-x-2 border pl-2.5 pr-1.5 py-1 rounded-xl shadow-xs transition-colors duration-300">
-                <div class="text-right">
-                    <div id="rank-label" class="text-[9px] sm:text-[10px] font-sans uppercase tracking-wider leading-none">현재 등급</div>
-                    <div id="user-rank-display" class="font-bold text-xs sm:text-sm leading-tight mt-0.5">없음</div>
-                </div>
-                <div id="rank-icon-container" class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center border text-xs sm:text-sm shrink-0">
-                    <i class="fa-solid fa-user-xmark"></i>
+            <div class="flex items-center gap-2">
+                <div id="rank-badge-box" class="flex items-center space-x-2 border pl-2.5 pr-1.5 py-1 rounded-xl shadow-xs transition-colors duration-300">
+                    <div class="text-right">
+                        <div id="rank-label" class="text-[9px] sm:text-[10px] font-sans uppercase tracking-wider leading-none">현재 등급</div>
+                        <div id="user-rank-display" class="font-bold text-xs sm:text-sm leading-tight mt-0.5">없음</div>
+                    </div>
+                    <div id="rank-icon-container" class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center border text-xs sm:text-sm shrink-0">
+                        <i class="fa-solid fa-user-xmark"></i>
+                    </div>
                 </div>
             </div>
 
@@ -268,7 +280,7 @@
                     <span id="uuid-display-chip" class="font-mono text-[10px] px-2 py-0.5 rounded border opacity-80" title="접속자 UUID">UUID: ...</span>
                 </div>
                 <p id="time-subtext" class="text-xs sm:text-sm leading-snug">
-                    지령은 매일 오전 09:00 KST에 새로 전달되며, 열람 시 10분의 대기시간이 필요합니다.
+                    지령은 매일 오전 09:00 KST에 전달됩니다.
                 </p>
             </div>
             
@@ -285,6 +297,22 @@
                     <i class="fa-solid fa-gear"></i> 관리자 스위처 &amp; 시뮬레이터
                 </span>
                 <span id="dev-header-sub" class="text-[10px] font-mono opacity-70">ADMIN / DEV MODE</span>
+            </div>
+
+            <!-- Admin Internal Status Viewer -->
+            <div class="p-2.5 rounded-xl display-box grid grid-cols-3 gap-2 text-center text-xs">
+                <div>
+                    <div class="text-[9px] text-slate-400 font-sans uppercase">카르마</div>
+                    <div id="user-karma-display" class="font-bold font-mono text-rose-400 text-sm">0</div>
+                </div>
+                <div>
+                    <div class="text-[9px] text-slate-400 font-sans uppercase">승급 진행도</div>
+                    <div id="rank-progress-text" class="font-bold font-mono text-amber-400 text-sm">0회</div>
+                </div>
+                <div>
+                    <div class="text-[9px] text-slate-400 font-sans uppercase">대행 위험률</div>
+                    <div id="karma-risk-text" class="font-bold font-mono text-sky-400 text-sm">0%</div>
+                </div>
             </div>
             
             <!-- Theme Switcher Controls -->
@@ -314,11 +342,11 @@
                 <button onclick="skipToTomorrow9AM()" id="btn-sim-2" class="active:scale-95 py-2.5 px-3 rounded-xl transition font-medium">
                     내일 09시 이동
                 </button>
-                <button onclick="regenerateUUIDTest()" id="btn-sim-3" class="active:scale-95 py-2.5 px-3 rounded-xl transition font-medium">
-                    UUID 재발급
+                <button onclick="addKarmaDev(2)" id="btn-sim-karma" class="active:scale-95 py-2.5 px-3 rounded-xl transition font-medium text-rose-500 font-bold">
+                    +2 카르마 강제
                 </button>
                 <button onclick="triggerGlitchJumpscare()" id="btn-sim-4" class="active:scale-95 py-2.5 px-3 rounded-xl transition font-medium">
-                    <i class="fa-solid fa-skull mr-1"></i> 대행
+                    <i class="fa-solid fa-skull mr-1"></i> 강제 대행
                 </button>
             </div>
             <div class="pt-1">
@@ -340,10 +368,6 @@
                 <!-- Progress Bar -->
                 <div id="quota-bar-bg" class="w-full h-2.5 rounded-full overflow-hidden p-0.5 border">
                     <div id="daily-quota-bar" class="h-full w-0 rounded-full transition-all duration-500"></div>
-                </div>
-                <div id="quota-subtext" class="text-[11px] flex justify-between items-center pt-0.5 opacity-80">
-                    <span>수행자: 하루 2개</span>
-                    <span>대행자: 하루 3개</span>
                 </div>
             </div>
 
@@ -388,7 +412,7 @@
                 </button>
                 <button onclick="switchTab('archive')" id="tab-btn-archive" class="flex-1 py-3 px-3 text-xs sm:text-sm font-semibold border-b-2 border-transparent transition flex items-center justify-center gap-1.5 active:opacity-80 min-h-[48px]">
                     <i class="fa-solid fa-box-archive"></i>
-                    <span>보관소</span>
+                    <span>도감 보관소</span>
                     <span id="archive-count" class="px-1.5 py-0.2 text-[10px] rounded-full border">0</span>
                 </button>
             </div>
@@ -453,6 +477,9 @@
             <h1 class="font-serif text-3xl sm:text-5xl font-black tracking-widest text-slate-200 filter grayscale contrast-200">
                 대행 완료.
             </h1>
+            <p class="text-xs sm:text-sm text-rose-500 font-mono tracking-widest animate-pulse">
+                지령을 거역한 자에게 검지의 심판이 내려졌습니다.
+            </p>
         </div>
         <button onclick="recoverFromEjection()" class="absolute bottom-4 right-4 z-20 text-slate-800/30 hover:text-slate-500 transition-all p-3 rounded-full cursor-pointer focus:outline-none">
             <i class="fa-solid fa-lock text-sm"></i>
@@ -461,6 +488,9 @@
 
     <!-- GAME LOGIC & THEME SWITCHER SCRIPT -->
     <script>
+        // ==========================================
+        // 1. 기본 지령 라이브러리 (Prescript Library)
+        // ==========================================
         const PRESCRIPT_LIBRARY = [
             "오른쪽 신발끈을 풀고 3분간 걸은 후 다시 묶으시오.",
             "오늘 마주치는 세 번째 사람에게 조용히 고개를 숙여 인사하십시오.",
@@ -494,6 +524,9 @@
             "우산이나 지팡이를 들고 10걸음 걸으시오."
         ];
 
+        // ==========================================
+        // 2. 유틸리티 함수 (Cookie, UUID, Time, Theme)
+        // ==========================================
         function setCookie(name, value, days) {
             let expires = "";
             if (days) {
@@ -530,11 +563,15 @@
             return (Math.abs(hash) % 2 === 0) ? 'ivory' : 'neon';
         }
 
+        // ==========================================
+        // 3. 게임 상태 객체 및 등급 설정
+        // ==========================================
         let gameState = {
             uuid: '',
             rank: 'NONE',
             totalExecutions: 0,
             rankExecutions: 0,
+            karma: 0, // 카르마 수치
             history: [],
             archive: [],
             currentSimulatedTime: null,
@@ -542,7 +579,6 @@
             dailyIssuedCount: 0,
             dailyPrescripts: [],
             usedPrescriptIds: {},
-            karma: 0,
             lastExecutedTimestamp: null,
             lastOpenedTimestamp: null,
             isEjected: false,
@@ -551,7 +587,7 @@
 
         let currentHistoryPage = 1;
         const ITEMS_PER_PAGE = 10;
-        const OPEN_COOLDOWN_MS = 10 * 60 * 1000;
+        const OPEN_COOLDOWN_MS = 10 * 60 * 1000; // 10분 대기시간
 
         const RANKS = {
             NONE: { name: '없음', quota: 1, prob: 0.075, pity: 20, icon: 'fa-user-xmark' },
@@ -579,17 +615,11 @@
             return `${y}-${m}-${d}`;
         }
 
-        function seededRandom(seedStr) {
-            let hash = 0;
-            for (let i = 0; i < seedStr.length; i++) {
-                hash = seedStr.charCodeAt(i) + ((hash << 5) - hash);
-            }
-            const x = Math.sin(hash++) * 10000;
-            return x - Math.floor(x);
-        }
-
+        // ==========================================
+        // 4. 상태 저장 및 불러오기 (Storage Handler)
+        // ==========================================
         function saveState() {
-            localStorage.setItem('index_prescript_game_state_v4', JSON.stringify(gameState));
+            localStorage.setItem('index_prescript_game_state_v5', JSON.stringify(gameState));
         }
 
         function loadState() {
@@ -599,11 +629,12 @@
                 setCookie('index_user_uuid', cookieUUID, 365);
             }
 
-            const saved = localStorage.getItem('index_prescript_game_state_v4');
+            const saved = localStorage.getItem('index_prescript_game_state_v5');
             if (saved) {
                 try {
                     gameState = JSON.parse(saved);
                     gameState.uuid = cookieUUID;
+                    if (gameState.karma === undefined) gameState.karma = 0;
                     if (!gameState.adminThemeOverride) gameState.adminThemeOverride = 'auto';
                 } catch (e) {
                     initNewUser(cookieUUID);
@@ -619,6 +650,7 @@
                 rank: 'NONE',
                 totalExecutions: 0,
                 rankExecutions: 0,
+                karma: 0,
                 history: [],
                 archive: [],
                 currentSimulatedTime: null,
@@ -626,7 +658,6 @@
                 dailyIssuedCount: 0,
                 dailyPrescripts: [],
                 usedPrescriptIds: {},
-                karma: 0,
                 lastExecutedTimestamp: null,
                 lastOpenedTimestamp: null,
                 isEjected: false,
@@ -635,35 +666,26 @@
             saveState();
         }
 
-        function calculateKarmaOnReset(logicalDateStr) {
-            if (!gameState.lastResetDateStr) return;
-
-            const prevDate = new Date(gameState.lastResetDateStr);
-            const currDate = new Date(logicalDateStr);
-            const diffDays = Math.floor((currDate - prevDate) / (1000 * 60 * 60 * 24));
-
-            let addedKarma = 0;
-            const unexecutedCount = gameState.dailyPrescripts.filter(p => !p.executed).length;
-            addedKarma += unexecutedCount;
-
-            if (diffDays > 1) {
-                const missedDays = diffDays - 1;
-                const quota = RANKS[gameState.rank].quota;
-                addedKarma += missedDays * quota;
-            }
-
-            if (addedKarma > 0) {
-                gameState.karma += addedKarma;
-                const pityPenalty = Math.floor(gameState.karma / 2) * gameState.karma;
-                gameState.rankExecutions = Math.max(0, gameState.rankExecutions - pityPenalty);
-            }
-        }
-
+        // ==========================================
+        // 5. 핵심 로직: 일일 리셋, 카르마 계산 및 지령
+        // ==========================================
         function checkDailyReset() {
             const kst = getKSTDate();
             const todayStr = getKSTDateString(kst);
 
             if (gameState.lastResetDateStr !== todayStr) {
+                // 이전 날 미수행 지령 당 카르마 2 축적
+                if (gameState.dailyPrescripts && gameState.dailyPrescripts.length > 0) {
+                    const unexecutedCount = gameState.dailyPrescripts.filter(p => !p.executed).length;
+                    if (unexecutedCount > 0) {
+                        const karmaGained = unexecutedCount * 2;
+                        gameState.karma += karmaGained;
+                        
+                        // 카르마 상승 시 카르마 수치만큼 승급 진행도 감소
+                        gameState.rankExecutions = Math.max(0, gameState.rankExecutions - gameState.karma);
+                    }
+                }
+
                 gameState.lastResetDateStr = todayStr;
                 gameState.dailyIssuedCount = 0;
                 gameState.dailyPrescripts = [];
@@ -684,7 +706,6 @@
             while (attempts < 50) {
                 const rand = Math.floor(Math.random() * PRESCRIPT_LIBRARY.length);
                 const lastUsedTime = gameState.usedPrescriptIds[rand] || 0;
-                // 24시간 이내 재등장 방지
                 if (kstTime - lastUsedTime > 24 * 60 * 60 * 1000) {
                     libIdx = rand;
                     break;
@@ -695,43 +716,44 @@
 
             const prescriptId = 'pre-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
             
-            // 첫 번째 지령이 아니고 카르마가 3 이상일 때 30% 확률로 검지의 불타는 지령 발생
-            let isKarmicSpecial = false;
-            if (gameState.dailyIssuedCount > 0 && gameState.karma >= 3 && Math.random() < 0.3) {
-                isKarmicSpecial = true;
-            }
-
-            let text = PRESCRIPT_LIBRARY[libIdx];
-            if (isKarmicSpecial) {
-                text = "[검지의 불타는 지령] 부정한 자의 청원이나 사사로운 감정에 휘둘리지 말고 즉시 지령을 이행할지니라: " + text;
-            }
+            // 카르마가 10 이상일 때만 20% 확률로 "지령을 따라라" 경고 지령 생성
+            const isWarningPrescript = (gameState.karma >= 10) && (Math.random() < 0.20);
+            const text = isWarningPrescript ? "지령을 따라라" : PRESCRIPT_LIBRARY[libIdx];
 
             const kst = getKSTDate();
-            const availableAt = kst.getTime() + (gameState.dailyIssuedCount === 0 ? 0 : 10 * 60 * 1000);
+            const availableAt = kst.getTime();
 
             gameState.dailyPrescripts.push({
                 id: prescriptId,
-                libraryIndex: libIdx,
+                libraryIndex: isWarningPrescript ? -1 : libIdx,
                 text: text,
-                opened: gameState.dailyIssuedCount === 0,
+                isWarning: isWarningPrescript,
+                opened: false, // 열람 버튼을 직접 눌러야만 열리도록 초기화
                 executed: false,
-                availableAt: availableAt,
-                isKarmicSpecial: isKarmicSpecial
+                availableAt: availableAt
             });
 
             gameState.dailyIssuedCount++;
-            if (gameState.dailyIssuedCount === 1 && !gameState.lastOpenedTimestamp) {
-                gameState.lastOpenedTimestamp = kst.getTime();
-            }
+            saveState();
         }
 
         function openPrescript(prescriptId) {
             const target = gameState.dailyPrescripts.find(p => p.id === prescriptId);
             if (!target || target.opened) return;
 
+            // 카르마% 확률로 지령 열람 시 대행 발동
+            const karmaProbability = Math.min(100, gameState.karma) / 100;
+            if (gameState.karma > 0 && Math.random() < karmaProbability) {
+                triggerGlitchJumpscare();
+                return;
+            }
+
             const kst = getKSTDate();
-            if (kst.getTime() < target.availableAt) {
-                showToast("대기 중", "아직 열람 대기 시간이 지나지 않았습니다.", true);
+            if (gameState.lastOpenedTimestamp && (kst.getTime() - gameState.lastOpenedTimestamp < OPEN_COOLDOWN_MS)) {
+                const remaining = Math.ceil((OPEN_COOLDOWN_MS - (kst.getTime() - gameState.lastOpenedTimestamp)) / 1000);
+                const mins = Math.floor(remaining / 60);
+                const secs = remaining % 60;
+                showToast("열람 제한", `다음 지령 확인까지 ${mins}분 ${secs}초 남았습니다.`, true);
                 return;
             }
 
@@ -739,86 +761,7 @@
             gameState.lastOpenedTimestamp = kst.getTime();
             saveState();
             updateUI();
-            showToast("열람", "새로운 지령의 봉인이 해제되었습니다.");
-        }
-
-
-                gameState.dailyPrescripts.push(specialPrescript);
-                saveState();
-                return;
-            }
-
-            if (gameState.dailyIssuedCount >= rankInfo.quota) return;
-
-            const kst = getKSTDate();
-            const availableAt = kst.getTime() + (gameState.dailyIssuedCount === 0 ? 0 : 10 * 60 * 1000);
-
-
-            let selectedIndex = -1;
-            let attempts = 0;
-            const nowTime = kst.getTime();
-            const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
-
-            while (attempts < 100) {
-                const seed = `${gameState.uuid}-${dateStr}-${gameState.dailyIssuedCount}-${attempts}`;
-                const randVal = seededRandom(seed);
-                const candidateIndex = Math.floor(randVal * PRESCRIPT_LIBRARY.length);
-
-                const lastUsed = gameState.usedPrescriptIds[candidateIndex] || 0;
-                if (nowTime - lastUsed > SEVEN_DAYS_MS) {
-                    selectedIndex = candidateIndex;
-                    break;
-                }
-                attempts++;
-            }
-
-            if (selectedIndex === -1) {
-                selectedIndex = Math.floor(Math.random() * PRESCRIPT_LIBRARY.length);
-            }
-
-            const newPrescript = {
-                id: 'p-' + Date.now() + '-' + Math.floor(Math.random() * 1000),
-                libraryIndex: selectedIndex,
-                text: PRESCRIPT_LIBRARY[selectedIndex],
-                executed: false,
-                opened: false,
-                availableAt: kst.getTime()
-            };
-
-            gameState.dailyPrescripts.push(newPrescript);
-            gameState.dailyIssuedCount++;
-            saveState();
-        }
-
-        function openPrescript(prescriptId) {
-            const target = gameState.dailyPrescripts.find(p => p.id === prescriptId);
-            if (!target) return;
-
-            const kst = getKSTDate();
-
-            if (gameState.karma >= 1) {
-                const ejectionProb = (gameState.karma * 2) / 100;
-                if (Math.random() < ejectionProb) {
-                    triggerGlitchJumpscare();
-                    return;
-                }
-            }
-
-            if (gameState.lastOpenedTimestamp) {
-                const elapsed = kst.getTime() - gameState.lastOpenedTimestamp;
-                if (elapsed < OPEN_COOLDOWN_MS) {
-                    const remainingMs = OPEN_COOLDOWN_MS - elapsed;
-                    const mins = Math.floor(remainingMs / 60000);
-                    const secs = Math.ceil((remainingMs % 60000) / 1000);
-                    showToast("열람 제한", `다음 지령을 확인하기까지 ${mins}분 ${secs}초 남았습니다.`, true);
-                    return;
-                }
-            }
-
-            target.opened = true;
-            gameState.lastOpenedTimestamp = kst.getTime();
-            saveState();
-            updateUI();
+            showToast("열람", "지령의 봉인이 해제되었습니다.");
         }
 
         function executePrescript(prescriptId) {
@@ -826,15 +769,16 @@
             if (!target || target.executed) return;
 
             const kst = getKSTDate();
-            if (kst.getTime() < target.availableAt) {
-                showToast("오류", "아직 대기시간이 지나지 않았습니다.", true);
-                return;
-            }
 
             target.executed = true;
             gameState.totalExecutions++;
             gameState.rankExecutions++;
             gameState.lastExecutedTimestamp = kst.getTime();
+
+            // 수행 시 카르마 1 차감 (최소 0)
+            if (gameState.karma > 0) {
+                gameState.karma = Math.max(0, gameState.karma - 1);
+            }
 
             if (target.libraryIndex >= 0) {
                 gameState.usedPrescriptIds[target.libraryIndex] = kst.getTime();
@@ -849,16 +793,20 @@
                 rank: RANKS[gameState.rank].name
             });
 
-            gameState.archive.push({
-                id: target.id,
-                text: target.text,
-                date: timeStr
-            });
+            // 도감 보관소
+            const existsInArchive = gameState.archive.some(item => item.text === target.text);
+            if (!existsInArchive) {
+                gameState.archive.push({
+                    id: target.id,
+                    text: target.text,
+                    date: timeStr
+                });
+            }
 
-            showToast("지령 수행 완료", "지령의 뜻이 성공적으로 이행되었습니다.");
+            showToast("지령 수행 완료", "지령의 뜻이 이뤄졌습니다.");
 
             const rankInfo = RANKS[gameState.rank];
-            if (gameState.dailyIssuedCount < rankInfo.quota && !target.isForcedSpecial) {
+            if (gameState.dailyIssuedCount < rankInfo.quota) {
                 setTimeout(() => {
                     issueNextPrescript();
                     updateUI();
@@ -900,6 +848,9 @@
             }
         }
 
+        // ==========================================
+        // 6. UI & 이펙트 및 모달 컨트롤
+        // ==========================================
         function setScrollLock(enableLock) {
             if (enableLock) {
                 document.body.classList.add('no-scroll');
@@ -947,8 +898,9 @@
         }
 
         function recoverFromEjection() {
-            gameState.karma = 0;
             gameState.isEjected = false;
+            // 대행 후 잠금 해제 시 카르마를 0으로 초기화
+            gameState.karma = 0;
 
             if (gameState.rank === 'MESSENGER') {
                 gameState.rank = 'PROSELYTE';
@@ -962,7 +914,7 @@
             document.getElementById('ejection-screen').classList.add('hidden');
             document.getElementById('ejection-screen').classList.remove('flex');
 
-            showToast("복구 완료", "카르마가 초기화되었습니다.");
+            showToast("복구 완료", "대행 모드가 종료되었으며 카르마가 초기화되었습니다.");
             updateUI();
         }
 
@@ -987,6 +939,14 @@
             showToast("시간 가속", `시간이 ${minutes}분 앞으로 이동했습니다.`);
         }
 
+        function addKarmaDev(val) {
+            gameState.karma += val;
+            gameState.rankExecutions = Math.max(0, gameState.rankExecutions - gameState.karma);
+            saveState();
+            updateUI();
+            showToast("카르마 조절", `카르마가 +${val} 증가했습니다.`);
+        }
+
         function skipToTomorrow9AM() {
             const current = getKSTDate();
             current.setDate(current.getDate() + 1);
@@ -998,17 +958,8 @@
             showToast("날짜 변경", "내일 오전 09:00 KST로 이동했습니다.");
         }
 
-        function regenerateUUIDTest() {
-            const newUuid = generateUUID();
-            setCookie('index_user_uuid', newUuid, 365);
-            gameState.uuid = newUuid;
-            saveState();
-            updateUI();
-            showToast("UUID 재발급", `새 UUID: ${newUuid.slice(0, 12)}...`);
-        }
-
         function resetAllData() {
-            localStorage.removeItem('index_prescript_game_state_v4');
+            localStorage.removeItem('index_prescript_game_state_v5');
             const newUuid = generateUUID();
             setCookie('index_user_uuid', newUuid, 365);
             initNewUser(newUuid);
@@ -1022,6 +973,9 @@
             renderHistory();
         }
 
+        // ==========================================
+        // 7. 메인 UI 렌더링 함수 (UI Renderer)
+        // ==========================================
         function updateUI() {
             applyThemeUI();
 
@@ -1031,6 +985,30 @@
                 hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
             });
             document.getElementById('current-kst-time').innerText = timeStr;
+            document.getElementById('user-karma-display').innerText = gameState.karma;
+            document.getElementById('rank-progress-text').innerText = `${gameState.rankExecutions}회`;
+            document.getElementById('karma-risk-text').innerText = `${Math.min(100, gameState.karma)}%`;
+
+            // 타이머 안내
+            const cooldownStatus = document.getElementById('cooldown-timer-status');
+            const hasUnopenedPrescripts = gameState.dailyPrescripts.some(p => !p.opened);
+
+            if (hasUnopenedPrescripts && gameState.lastOpenedTimestamp) {
+                const elapsed = kst.getTime() - gameState.lastOpenedTimestamp;
+                if (elapsed < OPEN_COOLDOWN_MS) {
+                    const remain = Math.ceil((OPEN_COOLDOWN_MS - elapsed) / 1000);
+                    const m = Math.floor(remain / 60);
+                    const s = remain % 60;
+                    cooldownStatus.innerText = `다음 열람 대기: ${m}분 ${s}초`;
+                    cooldownStatus.className = "text-xs font-mono font-semibold text-amber-600";
+                } else {
+                    cooldownStatus.innerText = "지령 열람 가능";
+                    cooldownStatus.className = "text-xs font-mono font-semibold text-emerald-600";
+                }
+            } else {
+                cooldownStatus.innerText = "";
+                cooldownStatus.className = "text-xs font-mono font-semibold";
+            }
 
             const currentRankInfo = RANKS[gameState.rank];
             const rankDisplay = document.getElementById('user-rank-display');
@@ -1080,24 +1058,27 @@
             container.innerHTML = gameState.dailyPrescripts.map((p, idx) => {
                 const isExecuted = p.executed;
                 const isOpened = p.opened;
+                const isWarning = p.isWarning;
 
                 let cardHTML = '';
                 if (activeTheme === 'ivory') {
                     cardHTML = `
-                        <div class="glass-panel p-6 sm:p-8 rounded-2xl relative overflow-hidden transition-all duration-300 space-y-5 border-[#e2d5c3] min-h-[260px] flex flex-col justify-between shadow-sm">
+                        <div class="glass-panel p-6 sm:p-8 rounded-2xl relative overflow-hidden transition-all duration-300 space-y-5 border-[#e2d5c3] min-h-[260px] flex flex-col justify-between shadow-sm ${isWarning ? 'warning-card-border' : ''}">
                             <div class="flex justify-between items-center text-xs">
-                                <span class="font-bold font-mono text-[#9e2a2b] flex items-center gap-1.5">
-                                    <i class="fa-solid fa-tag"></i> 지령 #${idx + 1}
+                                <span class="font-bold font-mono ${isWarning ? 'text-rose-600' : 'text-[#9e2a2b]'} flex items-center gap-1.5">
+                                    <i class="fa-solid ${isWarning ? 'fa-triangle-exclamation animate-bounce text-rose-600' : 'fa-tag'}"></i> 지령 #${idx + 1} ${isWarning ? '[경고]' : ''}
                                 </span>
                                 <span class="text-[11px] font-mono px-2.5 py-0.5 rounded-full ${isExecuted ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-amber-100 text-amber-800 border border-amber-300'}">
                                     ${isExecuted ? '이행 완료' : (isOpened ? '열람됨' : '미열람')}
                                 </span>
                             </div>
 
-                            <div class="py-10 px-6 rounded-xl ${isOpened ? 'bg-[#f8f5ee] border border-[#e2d5c3]' : 'bg-[#ebdcd0] border border-[#d8c5b0]'} min-h-[130px] flex items-center justify-center text-center my-auto shadow-inner">
+                            <div class="py-10 px-6 rounded-xl ${isOpened ? (isWarning ? 'bg-rose-950 text-rose-100 border border-rose-600 shadow-[0_0_15px_rgba(225,29,72,0.5)]' : 'bg-[#f8f5ee] border border-[#e2d5c3]') : 'bg-[#ebdcd0] border border-[#d8c5b0]'} min-h-[130px] flex items-center justify-center text-center my-auto shadow-inner">
                                 ${isOpened 
-                                    ? `<p class="font-serif text-sm sm:text-base font-bold leading-relaxed text-[#2c2825] ${isExecuted ? 'line-through opacity-60 decoration-[#9e2a2b] decoration-2' : ''}">"${p.text}"</p>`
-                                    : `<button onclick="openPrescript('${p.id}')" class="w-full py-3.5 rounded-xl bg-[#9e2a2b] hover:bg-[#bd3a3c] text-white text-xs sm:text-sm font-bold transition active:scale-95 flex items-center justify-center gap-2.5 shadow-md">
+                                    ? `<p class="font-serif ${isWarning ? 'text-lg sm:text-2xl font-black text-rose-400 tracking-widest' : 'text-sm sm:text-base font-bold text-[#2c2825]'} leading-relaxed ${isExecuted ? 'line-through opacity-60 decoration-[#9e2a2b] decoration-2' : ''}">
+                                        ${isWarning ? `<i class="fa-solid fa-triangle-exclamation mr-2"></i>` : ''}"${p.text}"
+                                       </p>`
+                                    : `<button onclick="openPrescript('${p.id}')" class="w-full py-3.5 rounded-xl ${isWarning ? 'bg-rose-700 hover:bg-rose-800' : 'bg-[#9e2a2b] hover:bg-[#bd3a3c]'} text-white text-xs sm:text-sm font-bold transition active:scale-95 flex items-center justify-center gap-2.5 shadow-md">
                                         <i class="fa-solid fa-envelope-open-text text-sm"></i> 지령 열람하기
                                        </button>`
                                 }
@@ -1105,7 +1086,7 @@
 
                             <div class="relative z-10 pt-1">
                                 ${isOpened && !isExecuted ? `
-                                    <button onclick="executePrescript('${p.id}')" class="w-full py-3.5 rounded-xl bg-[#9e2a2b] hover:bg-[#bd3a3c] text-white font-bold text-xs sm:text-sm shadow-md active:scale-98 transition flex items-center justify-center gap-2">
+                                    <button onclick="executePrescript('${p.id}')" class="w-full py-3.5 rounded-xl ${isWarning ? 'bg-rose-700 hover:bg-rose-800' : 'bg-[#9e2a2b] hover:bg-[#bd3a3c]'} text-white font-bold text-xs sm:text-sm shadow-md active:scale-98 transition flex items-center justify-center gap-2">
                                         <i class="fa-solid fa-stamp"></i> 지령 이행 (완료 처리)
                                     </button>
                                 ` : ''}
@@ -1122,20 +1103,22 @@
                     `;
                 } else {
                     cardHTML = `
-                        <div class="glass-panel p-6 sm:p-8 rounded-2xl relative overflow-hidden transition-all duration-300 space-y-5 border-slate-300 shadow-md min-h-[260px] flex flex-col justify-between">
+                        <div class="glass-panel p-6 sm:p-8 rounded-2xl relative overflow-hidden transition-all duration-300 space-y-5 border-slate-300 shadow-md min-h-[260px] flex flex-col justify-between ${isWarning ? 'border-rose-600 shadow-[0_0_20px_rgba(225,29,72,0.4)]' : ''}">
                             <div class="flex justify-between items-center text-xs">
-                                <span class="font-mono font-bold text-sky-600 flex items-center gap-1.5">
-                                    <i class="fa-solid fa-microchip text-sky-500"></i> PRESCRIPT_ID: ${p.id.slice(-6)}
+                                <span class="font-mono font-bold ${isWarning ? 'text-rose-500' : 'text-sky-600'} flex items-center gap-1.5">
+                                    <i class="fa-solid ${isWarning ? 'fa-triangle-exclamation text-rose-500 animate-pulse' : 'fa-microchip text-sky-500'}"></i> PRESCRIPT_ID: ${p.id.slice(-6)} ${isWarning ? '[WARNING]' : ''}
                                 </span>
                                 <span class="text-[10px] font-mono px-2 py-0.5 rounded ${isExecuted ? 'bg-emerald-950 text-emerald-400 border border-emerald-500/50' : 'bg-sky-950 text-sky-300 border border-sky-500/50'}">
                                     ${isExecuted ? 'STATUS: EXECUTED' : (isOpened ? 'STATUS: OPENED' : 'STATUS: SEALED')}
                                 </span>
                             </div>
 
-                            <div class="py-10 px-6 rounded-xl bg-[#090d16] border border-sky-500/40 text-sky-300 min-h-[130px] flex items-center justify-center text-center shadow-[inset_0_2px_8px_rgba(0,0,0,0.8)] my-auto">
+                            <div class="py-10 px-6 rounded-xl bg-[#090d16] border ${isWarning ? 'border-rose-600/80 shadow-[0_0_20px_rgba(225,29,72,0.3)]' : 'border-sky-500/40'} min-h-[130px] flex items-center justify-center text-center my-auto">
                                 ${isOpened 
-                                    ? `<p class="font-serif text-sm sm:text-base font-bold leading-relaxed text-sky-100 ${isExecuted ? 'line-through opacity-50 decoration-sky-400 decoration-2' : ''}">"${p.text}"</p>`
-                                    : `<button onclick="openPrescript('${p.id}')" class="w-full py-3.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 text-xs sm:text-sm font-mono font-bold transition active:scale-95 flex items-center justify-center gap-2.5 shadow-[0_0_12px_rgba(14,165,233,0.5)]">
+                                    ? `<p class="font-serif ${isWarning ? 'text-lg sm:text-2xl font-black text-rose-500 tracking-widest' : 'text-sm sm:text-base font-bold text-sky-100'} leading-relaxed ${isExecuted ? 'line-through opacity-50 decoration-sky-400 decoration-2' : ''}">
+                                        ${isWarning ? `<i class="fa-solid fa-triangle-exclamation mr-2"></i>` : ''}"${p.text}"
+                                       </p>`
+                                    : `<button onclick="openPrescript('${p.id}')" class="w-full py-3.5 rounded-xl ${isWarning ? 'bg-rose-600 hover:bg-rose-500 text-white' : 'bg-sky-500 hover:bg-sky-400 text-slate-950'} text-xs sm:text-sm font-mono font-bold transition active:scale-95 flex items-center justify-center gap-2.5 shadow-md">
                                         <i class="fa-solid fa-lock-open text-sm"></i> DECRYPT PRESCRIPT
                                        </button>`
                                 }
@@ -1143,8 +1126,8 @@
 
                             <div class="relative z-10 pt-1">
                                 ${isOpened && !isExecuted ? `
-                                    <button onclick="executePrescript('${p.id}')" class="w-full py-3.5 rounded-xl bg-[#0b1120] hover:bg-slate-900 border border-sky-400/80 text-sky-300 font-mono font-bold text-xs sm:text-sm shadow-[0_0_10px_rgba(14,165,233,0.2)] active:scale-98 transition flex items-center justify-center gap-2">
-                                        <i class="fa-solid fa-check-double text-sky-400"></i> EXECUTE PROTOCOL
+                                    <button onclick="executePrescript('${p.id}')" class="w-full py-3.5 rounded-xl bg-[#0b1120] hover:bg-slate-900 border ${isWarning ? 'border-rose-500 text-rose-400' : 'border-sky-400/80 text-sky-300'} font-mono font-bold text-xs sm:text-sm active:scale-98 transition flex items-center justify-center gap-2">
+                                        <i class="fa-solid fa-check-double"></i> EXECUTE PROTOCOL
                                     </button>
                                 ` : ''}
                             </div>
@@ -1192,7 +1175,7 @@
             
             const btnSim1 = document.getElementById('btn-sim-1');
             const btnSim2 = document.getElementById('btn-sim-2');
-            const btnSim3 = document.getElementById('btn-sim-3');
+            const btnSimKarma = document.getElementById('btn-sim-karma');
             const btnSim4 = document.getElementById('btn-sim-4');
             const btnResetAll = document.getElementById('btn-reset-all');
 
@@ -1236,7 +1219,7 @@
 
                 btnSim1.className = "active:scale-95 py-2.5 px-3 rounded-xl transition font-medium bg-[#ebdcd0] hover:bg-[#d8c5b0] text-[#2c2825] border border-[#d8c5b0]";
                 btnSim2.className = "active:scale-95 py-2.5 px-3 rounded-xl transition font-medium bg-[#ebdcd0] hover:bg-[#d8c5b0] text-[#2c2825] border border-[#d8c5b0]";
-                btnSim3.className = "active:scale-95 py-2.5 px-3 rounded-xl transition font-medium bg-[#ebdcd0] hover:bg-[#d8c5b0] text-[#2c2825] border border-[#d8c5b0]";
+                btnSimKarma.className = "active:scale-95 py-2.5 px-3 rounded-xl transition font-medium bg-[#ebdcd0] hover:bg-[#d8c5b0] text-rose-600 font-bold border border-[#d8c5b0]";
                 btnSim4.className = "active:scale-95 py-2.5 px-3 rounded-xl transition font-medium bg-[#ebdcd0] hover:bg-[#d8c5b0] text-[#9e2a2b] border border-[#d8c5b0]";
                 btnResetAll.className = "w-full active:scale-95 py-2 px-3 rounded-xl transition text-xs font-medium bg-[#ebdcd0] hover:bg-[#d8c5b0] text-[#9e2a2b] border border-[#d8c5b0]";
 
@@ -1284,7 +1267,7 @@
 
                 btnSim1.className = "active:scale-95 py-2.5 px-3 rounded-xl transition font-medium bg-slate-900 hover:bg-slate-800 text-sky-300 border border-sky-500/40";
                 btnSim2.className = "active:scale-95 py-2.5 px-3 rounded-xl transition font-medium bg-slate-900 hover:bg-slate-800 text-sky-300 border border-sky-500/40";
-                btnSim3.className = "active:scale-95 py-2.5 px-3 rounded-xl transition font-medium bg-slate-900 hover:bg-slate-800 text-sky-300 border border-sky-500/40";
+                btnSimKarma.className = "active:scale-95 py-2.5 px-3 rounded-xl transition font-medium bg-slate-900 hover:bg-slate-800 text-rose-400 font-bold border border-rose-500/40";
                 btnSim4.className = "active:scale-95 py-2.5 px-3 rounded-xl transition font-medium bg-slate-900 hover:bg-slate-800 text-rose-400 border border-rose-500/40";
                 btnResetAll.className = "w-full active:scale-95 py-2 px-3 rounded-xl transition text-xs font-medium bg-slate-900 hover:bg-slate-800 text-rose-400 border border-rose-500/40";
 
@@ -1378,7 +1361,7 @@
                 list.innerHTML = gameState.archive.map((item, idx) => `
                     <div class="p-3.5 rounded-xl flex flex-col justify-between text-xs space-y-1.5 bg-[#f2eae0] border border-[#e2d5c3] shadow-xs">
                         <div class="flex items-center justify-between text-[10px] font-mono opacity-70 border-b border-[#e2d5c3] pb-1 text-[#6e675f]">
-                            <span>기록 #${idx + 1}</span>
+                            <span>도감 #${idx + 1}</span>
                             <span>${item.date.split(' ')[0]}</span>
                         </div>
                         <div class="font-serif leading-snug text-[#2c2825] font-medium">"${item.text}"</div>
@@ -1474,10 +1457,18 @@
             }, 3200);
         }
 
+        // ==========================================
+        // 8. 애플리케이션 초기화 & 타이머 세팅
+        // ==========================================
         window.onload = function() {
             loadState();
             checkDailyReset();
             updateUI();
+
+            setInterval(() => {
+                checkDailyReset();
+                updateUI();
+            }, 1000);
         };
     </script>
 </body>
