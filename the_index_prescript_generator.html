@@ -1,0 +1,1436 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>The Index Prescript Generator</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Noto Serif KR, Cinzel & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=JetBrains+Mono:wght@400;600;800&family=Noto+Serif+KR:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        ivory: {
+                            bg: '#f8f5ee',
+                            card: '#f2eae0',
+                            cardBorder: '#e2d5c3',
+                            panel: '#ebdcd0',
+                            text: '#2c2825',
+                            textMuted: '#6e675f',
+                            seal: '#9e2a2b',
+                            sealLight: '#bd3a3c',
+                            blue: '#4a6fa5',
+                            blueDark: '#35527a',
+                            bluePoint: '#648dc8',
+                            darkBox: '#22262c'
+                        },
+                        neon: {
+                            bg: '#f4f6f9',
+                            card: '#ffffff',
+                            cardBorder: '#dbe2ea',
+                            panel: '#eaeff5',
+                            text: '#0f172a',
+                            textMuted: '#64748b',
+                            displayBg: '#090d16',
+                            displayBorder: '#1e293b',
+                            cyan: '#0ea5e9',
+                            cyanMuted: '#0284c7',
+                            cyanGlow: '#38bdf8',
+                            crimson: '#e11d48'
+                        }
+                    },
+                    fontFamily: {
+                        serif: ['"Noto Serif KR"', 'serif'],
+                        cinzel: ['Cinzel', 'serif'],
+                        mono: ['"JetBrains Mono"', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        * {
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+
+        body.theme-ivory {
+            background-color: #f8f5ee;
+            color: #2c2825;
+            font-family: 'Noto Serif KR', serif;
+            background-image: radial-gradient(circle at 50% 0%, rgba(210, 195, 175, 0.25) 0%, transparent 75%);
+            background-attachment: fixed;
+        }
+
+        body.theme-neon {
+            background-color: #f4f6f9;
+            color: #0f172a;
+            font-family: 'Noto Serif KR', serif;
+            background-image: 
+                radial-gradient(circle at 50% 0%, rgba(14, 165, 233, 0.05) 0%, transparent 60%),
+                radial-gradient(circle at 100% 100%, rgba(15, 23, 42, 0.03) 0%, transparent 50%);
+            background-attachment: fixed;
+        }
+
+        body.no-scroll, html.no-scroll {
+            overflow: hidden !important;
+            height: 100% !important;
+            touch-action: none !important;
+            -webkit-overflow-scrolling: none !important;
+            position: fixed !important;
+            width: 100% !important;
+        }
+
+        .theme-ivory .glass-panel {
+            background: rgba(242, 234, 224, 0.85);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid #e2d5c3;
+            box-shadow: 0 4px 20px -2px rgba(80, 60, 40, 0.05);
+        }
+
+        .theme-ivory .display-box {
+            background-color: #20252c;
+            color: #e2e8f0;
+            border: 1px solid #333a45;
+        }
+
+        .theme-ivory .stamp-executed {
+            position: absolute;
+            right: 1.5rem;
+            bottom: 1.25rem;
+            transform: rotate(-12deg) scale(0.85);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            pointer-events: none;
+        }
+
+        .theme-ivory .stamp-executed.active {
+            opacity: 0.92;
+            transform: rotate(-12deg) scale(1);
+        }
+
+        .theme-ivory .wax-seal-circle {
+            width: 6.5rem;
+            height: 6.5rem;
+            border: 3px double #bd3a3c;
+            border-radius: 9999px;
+            background: rgba(158, 42, 43, 0.08);
+            color: #9e2a2b;
+            box-shadow: inset 0 0 10px rgba(158, 42, 43, 0.15);
+        }
+
+        .theme-neon .glass-panel {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid #cbd5e1;
+            box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.05), 0 8px 15px -6px rgba(14, 165, 233, 0.08);
+        }
+
+        .theme-neon .display-box {
+            background-color: #090d16;
+            color: #38bdf8;
+            border: 1px solid #1e293b;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.6), 0 0 8px rgba(14, 165, 233, 0.15);
+        }
+
+        .theme-neon .stamp-executed {
+            position: absolute;
+            right: 1.5rem;
+            bottom: 1.25rem;
+            transform: rotate(-8deg) scale(0.85);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            pointer-events: none;
+        }
+
+        .theme-neon .stamp-executed.active {
+            opacity: 0.95;
+            transform: rotate(-8deg) scale(1);
+        }
+
+        .theme-neon .wax-seal-circle {
+            width: 6.5rem;
+            height: 6.5rem;
+            border: 2px solid #0ea5e9;
+            border-radius: 0.75rem;
+            background: rgba(11, 17, 32, 0.92);
+            color: #38bdf8;
+            box-shadow: 0 0 15px rgba(14, 165, 233, 0.3);
+        }
+
+        ::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 9999px;
+        }
+
+        @keyframes glitchFlash {
+            0% { transform: translate(0) scale(1); filter: invert(0) contrast(100%); }
+            10% { transform: translate(-10px, 5px) skewX(20deg); filter: invert(1) contrast(500%) brightness(200%); }
+            20% { transform: translate(15px, -5px) scale(1.05); filter: contrast(300%) grayscale(100%); }
+            30% { transform: translate(-5px, -15px) skewY(-15deg); filter: invert(1); }
+            40% { transform: translate(10px, 10px) scale(0.95); filter: contrast(800%); }
+            50% { transform: translate(-15px, 0); filter: invert(0); }
+            60% { transform: translate(5px, 15px) skewX(-20deg); filter: contrast(400%); }
+            70% { transform: translate(-10px, -5px); filter: invert(1); }
+            80% { transform: translate(15px, 5px) scale(1.02); filter: contrast(600%); }
+            100% { transform: translate(0) scale(1); filter: invert(0); }
+        }
+
+        .glitch-active {
+            animation: glitchFlash 0.08s infinite alternate;
+        }
+
+        .crt-overlay {
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.4) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+            background-size: 100% 3px, 6px 100%;
+        }
+
+        @keyframes scanline {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100%); }
+        }
+
+        .scanline-effect::after {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(0deg, transparent 0%, rgba(255, 255, 255, 0.08) 50%, transparent 100%);
+            opacity: 0.6;
+            animation: scanline 8s linear infinite;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="theme-ivory min-h-screen flex flex-col justify-between selection:bg-sky-500 selection:text-white pb-safe transition-colors duration-300">
+
+    <!-- Header / Sticky Nav -->
+    <header id="main-header" class="sticky top-0 z-40 border-b px-3 sm:px-6 py-2.5 sm:py-3 transition-all duration-300 bg-white/80 backdrop-blur-md border-slate-200">
+        <div class="max-w-4xl mx-auto flex items-center justify-between gap-2">
+            
+            <!-- Logo Section -->
+            <div class="flex items-center space-x-2.5 sm:space-x-3">
+                <div id="logo-icon-box" class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center shrink-0 shadow-sm transition-all duration-300">
+                    <i id="logo-icon" class="fa-solid fa-scroll text-base sm:text-lg"></i>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h1 id="logo-title" class="font-cinzel tracking-widest text-base sm:text-lg font-black leading-tight">THE INDEX</h1>
+                        <span id="theme-badge" class="text-[9px] font-mono px-1.5 py-0.2 rounded border uppercase font-semibold">IVORY</span>
+                    </div>
+                    <p id="logo-subtitle" class="text-[10px] sm:text-xs font-serif tracking-tight">도시의 뜻, 검지의 지령</p>
+                </div>
+            </div>
+
+            <!-- Player Rank Badge -->
+            <div id="rank-badge-box" class="flex items-center space-x-2 border pl-2.5 pr-1.5 py-1 rounded-xl shadow-xs transition-colors duration-300">
+                <div class="text-right">
+                    <div id="rank-label" class="text-[9px] sm:text-[10px] font-sans uppercase tracking-wider leading-none">현재 등급</div>
+                    <div id="user-rank-display" class="font-bold text-xs sm:text-sm leading-tight mt-0.5">없음</div>
+                </div>
+                <div id="rank-icon-container" class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center border text-xs sm:text-sm shrink-0">
+                    <i class="fa-solid fa-user-xmark"></i>
+                </div>
+            </div>
+
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="max-w-4xl w-full mx-auto px-3 sm:px-6 py-4 sm:py-6 flex-1 space-y-4 sm:space-y-6">
+
+        <!-- Banner / Notification Bar -->
+        <div class="glass-panel rounded-2xl p-3.5 sm:p-5 flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3">
+            <div class="space-y-1">
+                <div class="text-xs flex items-center gap-1.5 flex-wrap">
+                    <span id="time-label" class="inline-flex items-center gap-1 font-medium">
+                        <i class="fa-solid fa-clock text-xs"></i> KST 시각:
+                    </span>
+                    <span id="current-kst-time" class="font-mono display-box px-2 py-0.5 rounded text-[11px] sm:text-xs font-bold">-</span>
+                    <span id="uuid-display-chip" class="font-mono text-[10px] px-2 py-0.5 rounded border opacity-80" title="접속자 UUID">UUID: ...</span>
+                </div>
+                <p id="time-subtext" class="text-xs sm:text-sm leading-snug">
+                    지령은 매일 오전 09:00 KST에 새로 전달되며, 열람 시 10분의 대기시간이 필요합니다.
+                </p>
+            </div>
+            
+            <button onclick="toggleDevPanel()" id="dev-toggle-btn" class="active:scale-95 text-xs px-3 py-2.5 sm:py-2 rounded-xl border transition flex items-center justify-center gap-2 shrink-0 touch-manipulation min-h-[40px] font-medium">
+                <i class="fa-solid fa-sliders"></i>
+                <span>관리자 / 테마 변경</span>
+            </button>
+        </div>
+
+        <!-- Dev & Theme Controls Panel (Admin Only) -->
+        <div id="dev-panel" class="hidden glass-panel border-2 rounded-2xl p-4 space-y-3 backdrop-blur-md">
+            <div class="flex justify-between items-center border-b pb-2">
+                <span id="dev-header-title" class="text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
+                    <i class="fa-solid fa-gear"></i> 관리자 스위처 &amp; 시뮬레이터
+                </span>
+                <span id="dev-header-sub" class="text-[10px] font-mono opacity-70">ADMIN / DEV MODE</span>
+            </div>
+            
+            <!-- Theme Switcher Controls -->
+            <div id="dev-theme-box" class="p-2.5 rounded-xl display-box space-y-2">
+                <div id="dev-theme-title" class="text-[11px] font-bold flex items-center justify-between">
+                    <span><i class="fa-solid fa-palette mr-1"></i> 테마 수동 변경 (관리자 전용)</span>
+                    <span id="current-theme-mode-text" class="font-mono text-[10px]">AUTO (UUID)</span>
+                </div>
+                <div id="dev-theme-buttons" class="grid grid-cols-3 gap-2 text-xs font-sans">
+                    <button onclick="setThemeOverride('ivory')" id="btn-theme-ivory" class="py-1.5 px-2 rounded font-bold transition">
+                        📜 아이보리 종이
+                    </button>
+                    <button onclick="setThemeOverride('neon')" id="btn-theme-neon" class="py-1.5 px-2 rounded font-bold transition">
+                        ⚡ 백색 네온
+                    </button>
+                    <button onclick="setThemeOverride('auto')" id="btn-theme-auto" class="py-1.5 px-2 rounded transition">
+                        🔄 UUID 자동
+                    </button>
+                </div>
+            </div>
+
+            <!-- Simulation Action Buttons -->
+            <div id="dev-sim-buttons" class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                <button onclick="addTime(10)" id="btn-sim-1" class="active:scale-95 py-2.5 px-3 rounded-xl transition font-medium">
+                    +10분 가속
+                </button>
+                <button onclick="skipToTomorrow9AM()" id="btn-sim-2" class="active:scale-95 py-2.5 px-3 rounded-xl transition font-medium">
+                    내일 09시 이동
+                </button>
+                <button onclick="regenerateUUIDTest()" id="btn-sim-3" class="active:scale-95 py-2.5 px-3 rounded-xl transition font-medium">
+                    🎲 UUID 재발급
+                </button>
+                <button onclick="triggerGlitchJumpscare()" id="btn-sim-4" class="active:scale-95 py-2.5 px-3 rounded-xl transition font-medium">
+                    <i class="fa-solid fa-skull mr-1"></i> 점프스케어
+                </button>
+            </div>
+            <div class="pt-1">
+                <button onclick="resetAllData()" id="btn-reset-all" class="w-full active:scale-95 py-2 px-3 rounded-xl transition text-xs font-medium">
+                    전체 데이터 및 UUID 초기화
+                </button>
+            </div>
+        </div>
+
+        <!-- Rank Status & Quota Summary -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+            
+            <!-- Daily Quota Card -->
+            <div class="glass-panel rounded-2xl p-4 space-y-3">
+                <div class="flex justify-between items-center text-xs">
+                    <span id="quota-title" class="font-medium">오늘의 지령 한도</span>
+                    <span id="daily-quota-text" class="font-bold font-mono text-sm">0 / 1 완료</span>
+                </div>
+                <!-- Progress Bar -->
+                <div id="quota-bar-bg" class="w-full h-2.5 rounded-full overflow-hidden p-0.5 border">
+                    <div id="daily-quota-bar" class="h-full w-0 rounded-full transition-all duration-500"></div>
+                </div>
+                <div id="quota-subtext" class="text-[11px] flex justify-between items-center pt-0.5 opacity-80">
+                    <span>수행자: 하루 2개</span>
+                    <span>대행자: 하루 3개</span>
+                </div>
+            </div>
+
+            <!-- Current Rank Status Info -->
+            <div class="glass-panel rounded-2xl p-4 space-y-2 flex flex-col justify-between">
+                <div class="flex justify-between items-center text-xs">
+                    <span id="rank-info-title" class="font-medium">지령 수령 자격</span>
+                    <span id="rank-detail-badge" class="font-bold px-2 py-0.5 rounded-md border text-[11px]">수행 대기 중</span>
+                </div>
+                <p id="rank-info-desc" class="text-xs leading-relaxed opacity-80">
+                    지령을 성실히 수행하면 도시의 뜻에 따라 승급이 이루어집니다.
+                </p>
+            </div>
+
+        </div>
+
+        <!-- Prescripts Active Section -->
+        <div class="space-y-3 sm:space-y-4">
+            <div id="prescript-section-header" class="flex justify-between items-center border-b pb-2 px-1">
+                <h2 id="prescript-title-text" class="text-base sm:text-lg font-bold flex items-center gap-2 font-serif">
+                    <i id="prescript-title-icon" class="fa-solid fa-envelope-open-text"></i>
+                    <span>오늘 도착한 지령</span>
+                </h2>
+                <span id="cooldown-timer-status" class="text-xs font-mono font-semibold"></span>
+            </div>
+
+            <!-- Prescript Cards Container -->
+            <div id="prescript-cards-container" class="grid grid-cols-1 gap-4">
+                <!-- Dynamically populated cards -->
+            </div>
+        </div>
+
+        <!-- Tabs Section: History & Archive -->
+        <div id="history-archive-panel" class="glass-panel rounded-2xl overflow-hidden mt-6">
+            
+            <!-- Mobile Tab Buttons -->
+            <div id="tab-nav-bar" class="flex border-b">
+                <button onclick="switchTab('history')" id="tab-btn-history" class="flex-1 py-3 px-3 text-xs sm:text-sm font-semibold border-b-2 transition flex items-center justify-center gap-1.5 active:opacity-80 min-h-[48px]">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    <span>수행 기록</span>
+                    <span id="history-total-count" class="px-1.5 py-0.2 text-[10px] rounded-full border">0</span>
+                </button>
+                <button onclick="switchTab('archive')" id="tab-btn-archive" class="flex-1 py-3 px-3 text-xs sm:text-sm font-semibold border-b-2 border-transparent transition flex items-center justify-center gap-1.5 active:opacity-80 min-h-[48px]">
+                    <i class="fa-solid fa-box-archive"></i>
+                    <span>보관소</span>
+                    <span id="archive-count" class="px-1.5 py-0.2 text-[10px] rounded-full border">0</span>
+                </button>
+            </div>
+
+            <!-- Tab 1: History -->
+            <div id="tab-content-history" class="p-3.5 sm:p-5 space-y-3">
+                <div id="history-list" class="space-y-2.5 min-h-[160px]">
+                    <div class="text-center text-xs sm:text-sm py-10 opacity-50">아직 수행한 지령이 없습니다.</div>
+                </div>
+
+                <!-- Pagination -->
+                <div id="history-pagination" class="flex items-center justify-between border-t pt-3 text-xs hidden">
+                    <span id="history-page-info" class="font-mono">1 / 1 페이지</span>
+                    <div class="flex space-x-2">
+                        <button onclick="changeHistoryPage(-1)" id="btn-prev-page" class="active:scale-95 px-3 py-1.5 rounded-lg border min-h-[36px] min-w-[60px] font-medium disabled:opacity-30">이전</button>
+                        <button onclick="changeHistoryPage(1)" id="btn-next-page" class="active:scale-95 px-3 py-1.5 rounded-lg border min-h-[36px] min-w-[60px] font-medium disabled:opacity-30">다음</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 2: Archive -->
+            <div id="tab-content-archive" class="p-3.5 sm:p-5 hidden space-y-3">
+                <div id="archive-list" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-80 overflow-y-auto pr-1">
+                    <!-- Executed prescripts stored chronologically -->
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer id="main-footer" class="border-t py-5 text-center text-xs px-4 mt-6">
+        <p class="font-serif tracking-wider font-semibold">Project Moon 'The Index' Prescript Generator</p>
+        <p class="mt-1 text-[11px] opacity-70">지령은 절대적이며, 오직 수행만이 존재합니다.</p>
+    </footer>
+
+    <!-- Toast Notification Modal -->
+    <div id="toast-modal" class="fixed bottom-6 left-4 right-4 sm:left-auto sm:right-6 sm:w-96 z-50 transform translate-y-24 opacity-0 transition-all duration-300 pointer-events-none">
+        <div id="toast-bg" class="p-4 rounded-2xl shadow-2xl flex items-center space-x-3.5 border">
+            <div id="toast-icon-wrapper" class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border">
+                <i id="toast-icon" class="fa-solid fa-circle-check text-lg"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+                <div id="toast-title" class="font-bold text-sm truncate">지령 수행 완료</div>
+                <div id="toast-msg" class="text-xs mt-0.5 leading-snug opacity-90">검지의 뜻이 이뤄졌습니다.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- HORROR & EJECTION OVERLAY -->
+    <div id="ejection-screen" class="fixed inset-0 z-50 bg-black text-white hidden flex-col items-center justify-center select-none overflow-hidden crt-overlay scanline-effect touch-none">
+        <div class="absolute inset-0 opacity-20 pointer-events-none flex items-center justify-center">
+            <svg class="w-full h-full text-slate-400" viewBox="0 0 100 100" preserveAspectRatio="none">
+                <path d="M0,0 L100,100 M100,0 L0,100" stroke="currentColor" stroke-width="2" stroke-dasharray="2,2" />
+            </svg>
+        </div>
+        <div class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-40">
+            <i class="fa-solid fa-link-slash text-[18vw] text-slate-600 filter contrast-200"></i>
+        </div>
+        <div class="relative z-10 text-center space-y-4 px-4">
+            <h1 class="font-serif text-3xl sm:text-5xl font-black tracking-widest text-slate-200 filter grayscale contrast-200">
+                대행 완료.
+            </h1>
+        </div>
+        <button onclick="recoverFromEjection()" class="absolute bottom-4 right-4 z-20 text-slate-800/30 hover:text-slate-500 transition-all p-3 rounded-full cursor-pointer focus:outline-none">
+            <i class="fa-solid fa-lock text-sm"></i>
+        </button>
+    </div>
+
+    <!-- GAME LOGIC & THEME SWITCHER SCRIPT -->
+    <script>
+        const PRESCRIPT_LIBRARY = [
+            "오른쪽 신발끈을 풀고 3분간 걸은 후 다시 묶으시오.",
+            "오늘 마주치는 세 번째 사람에게 조용히 고개를 숙여 인사하십시오.",
+            "차분하게 차가운 물을 반 컵 마신 뒤 잔을 남쪽을 향하게 놓으시오.",
+            "집에 있는 책의 45페이지 7번째 줄을 나지막이 소리 내어 읽으시오.",
+            "검은색 옷을 입은 사람을 발견할 때까지 오른쪽으로만 직진하십시오.",
+            "정오가 되기 전 동쪽 하늘을 10초간 바라보시오.",
+            "종이에 '지령'이라는 글자를 7번 적은 뒤 잘게 찢어 버리시오.",
+            "오늘 하루 동안 거울을 볼 때마다 3초간 눈을 감으시오.",
+            "주머니에 작은 돌멩이 하나를 넣고 해가 질 때까지 가져다니시오.",
+            "누군가 질문을 하면 첫 번째 대답은 반드시 '그렇다'로 하시오.",
+            "왼손 손가락으로 테이블을 세 번 두드린 뒤 깊은 한숨을 쉬시오.",
+            "가방의 가장 작은 주머니에 동전 하나를 따로 넣어두시오.",
+            "오늘 처음 입에 대는 음식의 첫 숟가락은 5초간 씹으시오.",
+            "길을 걷다 붉은색 표지판을 보면 그 자리에서 잠시 멈추어 서시오.",
+            "종이비행기를 접어 가장 가까운 집 밖으로 날려 보내시오.",
+            "오늘 밤 잠들기 전 방의 불을 세 번 껐다 켜시오.",
+            "시계를 바라보고 초침이 12에 도달할 때까지 숨을 참으시오.",
+            "가장 좋아하는 노래의 첫 소절을 나지막하게 읊조리시오.",
+            "손바닥에 십자 표시를 그리고 하루 동안 유지하시오.",
+            "길가에 떨어진 나뭇잎 하나를 집어 책 사이에 끼워두시오.",
+            "오늘 두 번째로 마시는 음료는 빨대로만 마시도록 하시오.",
+            "왼쪽 주머니에 손을 넣은 채로 계단 5개를 오르시오.",
+            "자기 전 오늘 하루 떠오른 일 한 가지를 메모장에 적으시오.",
+            "파란색 펜을 사용하여 오늘의 첫 기록을 남기시오.",
+            "차가운 물을 칭찬하시오.",
+            "오늘 하루 동안 누군가의 이름을 부를 때 성을 붙이지 마시오.",
+            "문틀을 지날 때 머리 위를 한 번 쳐다보고 지나가시오.",
+            "문자 메시지를 보낼 때 마지막 문장에 느낌표를 붙이지 마시오.",
+            "식사 후 젓가락을 평소와 반대 방향으로 놓으시오.",
+            "우산이나 지팡이를 들고 10걸음 걸으시오."
+        ];
+
+        function setCookie(name, value, days) {
+            let expires = "";
+            if (days) {
+                const date = new Date();
+                date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+                expires = "; expires=" + date.toUTCString();
+            }
+            document.cookie = name + "=" + (value || "") + expires + "; path=/; SameSite=Lax";
+        }
+
+        function getCookie(name) {
+            const nameEQ = name + "=";
+            const ca = document.cookie.split(';');
+            for (let i = 0; i < ca.length; i++) {
+                let c = ca[i];
+                while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+                if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+            }
+            return null;
+        }
+
+        function generateUUID() {
+            return 'idx-' + 'xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
+
+        function getThemeFromUUID(uuid) {
+            let hash = 0;
+            for (let i = 0; i < uuid.length; i++) {
+                hash = uuid.charCodeAt(i) + ((hash << 5) - hash);
+            }
+            return (Math.abs(hash) % 2 === 0) ? 'ivory' : 'neon';
+        }
+
+        let gameState = {
+            uuid: '',
+            rank: 'NONE',
+            totalExecutions: 0,
+            rankExecutions: 0,
+            history: [],
+            archive: [],
+            currentSimulatedTime: null,
+            lastResetDateStr: '',
+            dailyIssuedCount: 0,
+            dailyPrescripts: [],
+            usedPrescriptIds: {},
+            karma: 0,
+            lastExecutedTimestamp: null,
+            lastOpenedTimestamp: null,
+            isEjected: false,
+            adminThemeOverride: 'auto'
+        };
+
+        let currentHistoryPage = 1;
+        const ITEMS_PER_PAGE = 10;
+        const OPEN_COOLDOWN_MS = 10 * 60 * 1000;
+
+        const RANKS = {
+            NONE: { name: '없음', quota: 1, prob: 0.075, pity: 20, icon: 'fa-user-xmark' },
+            PROSELYTE: { name: '수행자', quota: 2, prob: 0.010, pity: 100, icon: 'fa-user-shield' },
+            MESSENGER: { name: '대행자', quota: 3, prob: 0.0, pity: 0, icon: 'fa-crown' }
+        };
+
+        function getActiveTheme() {
+            if (gameState.adminThemeOverride && gameState.adminThemeOverride !== 'auto') {
+                return gameState.adminThemeOverride;
+            }
+            return getThemeFromUUID(gameState.uuid);
+        }
+
+        function getKSTDate() {
+            const now = gameState.currentSimulatedTime ? new Date(gameState.currentSimulatedTime) : new Date();
+            const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+            return new Date(utc + (3600000 * 9));
+        }
+
+        function getKSTDateString(dateObj) {
+            const y = dateObj.getFullYear();
+            const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+            const d = String(dateObj.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+        }
+
+        function seededRandom(seedStr) {
+            let hash = 0;
+            for (let i = 0; i < seedStr.length; i++) {
+                hash = seedStr.charCodeAt(i) + ((hash << 5) - hash);
+            }
+            const x = Math.sin(hash++) * 10000;
+            return x - Math.floor(x);
+        }
+
+        function saveState() {
+            localStorage.setItem('index_prescript_game_state_v4', JSON.stringify(gameState));
+        }
+
+        function loadState() {
+            let cookieUUID = getCookie('index_user_uuid');
+            if (!cookieUUID) {
+                cookieUUID = generateUUID();
+                setCookie('index_user_uuid', cookieUUID, 365);
+            }
+
+            const saved = localStorage.getItem('index_prescript_game_state_v4');
+            if (saved) {
+                try {
+                    gameState = JSON.parse(saved);
+                    gameState.uuid = cookieUUID;
+                    if (!gameState.adminThemeOverride) gameState.adminThemeOverride = 'auto';
+                } catch (e) {
+                    initNewUser(cookieUUID);
+                }
+            } else {
+                initNewUser(cookieUUID);
+            }
+        }
+
+        function initNewUser(uuid) {
+            gameState = {
+                uuid: uuid || generateUUID(),
+                rank: 'NONE',
+                totalExecutions: 0,
+                rankExecutions: 0,
+                history: [],
+                archive: [],
+                currentSimulatedTime: null,
+                lastResetDateStr: '',
+                dailyIssuedCount: 0,
+                dailyPrescripts: [],
+                usedPrescriptIds: {},
+                karma: 0,
+                lastExecutedTimestamp: null,
+                lastOpenedTimestamp: null,
+                isEjected: false,
+                adminThemeOverride: 'auto'
+            };
+            saveState();
+        }
+
+        function calculateKarmaOnReset(logicalDateStr) {
+            if (!gameState.lastResetDateStr) return;
+
+            const prevDate = new Date(gameState.lastResetDateStr);
+            const currDate = new Date(logicalDateStr);
+            const diffDays = Math.floor((currDate - prevDate) / (1000 * 60 * 60 * 24));
+
+            let addedKarma = 0;
+            const unexecutedCount = gameState.dailyPrescripts.filter(p => !p.executed).length;
+            addedKarma += unexecutedCount;
+
+            if (diffDays > 1) {
+                const missedDays = diffDays - 1;
+                const quota = RANKS[gameState.rank].quota;
+                addedKarma += missedDays * quota;
+            }
+
+            if (addedKarma > 0) {
+                gameState.karma += addedKarma;
+                const pityPenalty = Math.floor(gameState.karma / 2) * gameState.karma;
+                gameState.rankExecutions = Math.max(0, gameState.rankExecutions - pityPenalty);
+            }
+        }
+
+        function checkDailyReset() {
+            const kst = getKSTDate();
+            const logicalDate = new Date(kst);
+            if (kst.getHours() < 9) {
+                logicalDate.setDate(logicalDate.getDate() - 1);
+            }
+            const logicalDateStr = getKSTDateString(logicalDate);
+
+            if (gameState.lastResetDateStr !== logicalDateStr) {
+                calculateKarmaOnReset(logicalDateStr);
+
+                gameState.lastResetDateStr = logicalDateStr;
+                gameState.dailyIssuedCount = 0;
+                gameState.dailyPrescripts = [];
+
+                issueNextPrescript();
+                saveState();
+            }
+        }
+
+        function issueNextPrescript() {
+            const rankInfo = RANKS[gameState.rank];
+
+            if (gameState.karma >= 5) {
+                if (gameState.rank === 'MESSENGER') gameState.rank = 'PROSELYTE';
+                else if (gameState.rank === 'PROSELYTE') gameState.rank = 'NONE';
+
+                const specialPrescript = {
+                    id: 'p-forced-' + Date.now(),
+                    libraryIndex: -1,
+                    text: "지령을 따른다.",
+                    executed: false,
+                    opened: false,
+                    isForcedSpecial: true,
+                    availableAt: getKSTDate().getTime()
+                };
+
+                gameState.dailyPrescripts.push(specialPrescript);
+                saveState();
+                return;
+            }
+
+            if (gameState.dailyIssuedCount >= rankInfo.quota) return;
+
+            const kst = getKSTDate();
+            const dateStr = gameState.lastResetDateStr;
+
+            let selectedIndex = -1;
+            let attempts = 0;
+            const nowTime = kst.getTime();
+            const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
+
+            while (attempts < 100) {
+                const seed = `${gameState.uuid}-${dateStr}-${gameState.dailyIssuedCount}-${attempts}`;
+                const randVal = seededRandom(seed);
+                const candidateIndex = Math.floor(randVal * PRESCRIPT_LIBRARY.length);
+
+                const lastUsed = gameState.usedPrescriptIds[candidateIndex] || 0;
+                if (nowTime - lastUsed > SEVEN_DAYS_MS) {
+                    selectedIndex = candidateIndex;
+                    break;
+                }
+                attempts++;
+            }
+
+            if (selectedIndex === -1) {
+                selectedIndex = Math.floor(Math.random() * PRESCRIPT_LIBRARY.length);
+            }
+
+            const newPrescript = {
+                id: 'p-' + Date.now() + '-' + Math.floor(Math.random() * 1000),
+                libraryIndex: selectedIndex,
+                text: PRESCRIPT_LIBRARY[selectedIndex],
+                executed: false,
+                opened: false,
+                availableAt: kst.getTime()
+            };
+
+            gameState.dailyPrescripts.push(newPrescript);
+            gameState.dailyIssuedCount++;
+            saveState();
+        }
+
+        function openPrescript(prescriptId) {
+            const target = gameState.dailyPrescripts.find(p => p.id === prescriptId);
+            if (!target) return;
+
+            const kst = getKSTDate();
+
+            if (gameState.karma >= 1) {
+                const ejectionProb = (gameState.karma * 2) / 100;
+                if (Math.random() < ejectionProb) {
+                    triggerGlitchJumpscare();
+                    return;
+                }
+            }
+
+            if (gameState.lastOpenedTimestamp) {
+                const elapsed = kst.getTime() - gameState.lastOpenedTimestamp;
+                if (elapsed < OPEN_COOLDOWN_MS) {
+                    const remainingMs = OPEN_COOLDOWN_MS - elapsed;
+                    const mins = Math.floor(remainingMs / 60000);
+                    const secs = Math.ceil((remainingMs % 60000) / 1000);
+                    showToast("열람 제한", `다음 지령을 확인하기까지 ${mins}분 ${secs}초 남았습니다.`, true);
+                    return;
+                }
+            }
+
+            target.opened = true;
+            gameState.lastOpenedTimestamp = kst.getTime();
+            saveState();
+            updateUI();
+        }
+
+        function executePrescript(prescriptId) {
+            const target = gameState.dailyPrescripts.find(p => p.id === prescriptId);
+            if (!target || target.executed) return;
+
+            const kst = getKSTDate();
+            if (kst.getTime() < target.availableAt) {
+                showToast("오류", "아직 대기시간이 지나지 않았습니다.", true);
+                return;
+            }
+
+            target.executed = true;
+            gameState.totalExecutions++;
+            gameState.rankExecutions++;
+            gameState.lastExecutedTimestamp = kst.getTime();
+
+            if (target.libraryIndex >= 0) {
+                gameState.usedPrescriptIds[target.libraryIndex] = kst.getTime();
+            }
+
+            const timeStr = kst.toLocaleString('ko-KR', { hour12: false });
+
+            gameState.history.unshift({
+                id: target.id,
+                text: target.text,
+                date: timeStr,
+                rank: RANKS[gameState.rank].name
+            });
+
+            gameState.archive.push({
+                id: target.id,
+                text: target.text,
+                date: timeStr
+            });
+
+            showToast("지령 수행 완료", "지령의 뜻이 성공적으로 이행되었습니다.");
+
+            const rankInfo = RANKS[gameState.rank];
+            if (gameState.dailyIssuedCount < rankInfo.quota && !target.isForcedSpecial) {
+                setTimeout(() => {
+                    issueNextPrescript();
+                    updateUI();
+                }, 100);
+            }
+
+            checkPromotion();
+            saveState();
+            updateUI();
+        }
+
+        function checkPromotion() {
+            if (gameState.rank === 'MESSENGER') return;
+
+            const currentRankInfo = RANKS[gameState.rank];
+            const prob = currentRankInfo.prob;
+            const pity = currentRankInfo.pity;
+
+            let promoted = false;
+            if (gameState.rankExecutions >= pity || Math.random() < prob) {
+                promoted = true;
+            }
+
+            if (promoted) {
+                const prevRankName = currentRankInfo.name;
+                if (gameState.rank === 'NONE') {
+                    gameState.rank = 'PROSELYTE';
+                } else if (gameState.rank === 'PROSELYTE') {
+                    gameState.rank = 'MESSENGER';
+                }
+                gameState.rankExecutions = 0;
+
+                showToast("승급 확정!", `도시의 뜻에 따라 [${prevRankName}]에서 [${RANKS[gameState.rank].name}](으)로 승급하였습니다.`);
+
+                checkDailyReset();
+                if (gameState.dailyIssuedCount < RANKS[gameState.rank].quota) {
+                    issueNextPrescript();
+                }
+            }
+        }
+
+        function setScrollLock(enableLock) {
+            if (enableLock) {
+                document.body.classList.add('no-scroll');
+                document.documentElement.classList.add('no-scroll');
+            } else {
+                document.body.classList.remove('no-scroll');
+                document.documentElement.classList.remove('no-scroll');
+            }
+        }
+
+        function triggerGlitchJumpscare() {
+            gameState.isEjected = true;
+            saveState();
+
+            setScrollLock(true);
+
+            const body = document.body;
+            body.classList.add('glitch-active');
+
+            try {
+                const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                if (AudioCtx) {
+                    const ctx = new AudioCtx();
+                    const bufferSize = ctx.sampleRate * 1.2;
+                    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+                    const data = buffer.getChannelData(0);
+                    for (let i = 0; i < bufferSize; i++) {
+                        data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (ctx.sampleRate * 0.3));
+                    }
+                    const noise = ctx.createBufferSource();
+                    noise.buffer = buffer;
+                    const gain = ctx.createGain();
+                    gain.gain.setValueAtTime(0.8, ctx.currentTime);
+                    noise.connect(gain);
+                    gain.connect(ctx.destination);
+                    noise.start();
+                }
+            } catch (e) {}
+
+            setTimeout(() => {
+                body.classList.remove('glitch-active');
+                document.getElementById('ejection-screen').classList.remove('hidden');
+                document.getElementById('ejection-screen').classList.add('flex');
+            }, 700);
+        }
+
+        function recoverFromEjection() {
+            gameState.karma = 0;
+            gameState.isEjected = false;
+
+            if (gameState.rank === 'MESSENGER') {
+                gameState.rank = 'PROSELYTE';
+            } else if (gameState.rank === 'PROSELYTE') {
+                gameState.rank = 'NONE';
+            }
+
+            saveState();
+            setScrollLock(false);
+
+            document.getElementById('ejection-screen').classList.add('hidden');
+            document.getElementById('ejection-screen').classList.remove('flex');
+
+            showToast("복구 완료", "카르마가 초기화되었습니다.");
+            updateUI();
+        }
+
+        function toggleDevPanel() {
+            const panel = document.getElementById('dev-panel');
+            panel.classList.toggle('hidden');
+        }
+
+        function setThemeOverride(theme) {
+            gameState.adminThemeOverride = theme;
+            saveState();
+            updateUI();
+        }
+
+        function addTime(minutes) {
+            const current = gameState.currentSimulatedTime ? new Date(gameState.currentSimulatedTime) : new Date();
+            current.setMinutes(current.getMinutes() + minutes);
+            gameState.currentSimulatedTime = current.getTime();
+            checkDailyReset();
+            saveState();
+            updateUI();
+            showToast("시간 가속", `시간이 ${minutes}분 앞으로 이동했습니다.`);
+        }
+
+        function skipToTomorrow9AM() {
+            const current = getKSTDate();
+            current.setDate(current.getDate() + 1);
+            current.setHours(9, 0, 0, 0);
+            gameState.currentSimulatedTime = current.getTime();
+            checkDailyReset();
+            saveState();
+            updateUI();
+            showToast("날짜 변경", "내일 오전 09:00 KST로 이동했습니다.");
+        }
+
+        function regenerateUUIDTest() {
+            const newUuid = generateUUID();
+            setCookie('index_user_uuid', newUuid, 365);
+            gameState.uuid = newUuid;
+            saveState();
+            updateUI();
+            showToast("UUID 재발급", `새 UUID: ${newUuid.slice(0, 12)}...`);
+        }
+
+        function resetAllData() {
+            localStorage.removeItem('index_prescript_game_state_v4');
+            const newUuid = generateUUID();
+            setCookie('index_user_uuid', newUuid, 365);
+            initNewUser(newUuid);
+            checkDailyReset();
+            updateUI();
+            showToast("초기화 완료", "모든 데이터가 초기화되었습니다.");
+        }
+
+        function changeHistoryPage(delta) {
+            currentHistoryPage += delta;
+            renderHistory();
+        }
+
+        function updateUI() {
+            applyThemeUI();
+
+            const kst = getKSTDate();
+            const timeStr = kst.toLocaleString('ko-KR', {
+                year: 'numeric', month: '2-digit', day: '2-digit',
+                hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
+            });
+            document.getElementById('current-kst-time').innerText = timeStr;
+
+            const currentRankInfo = RANKS[gameState.rank];
+            const rankDisplay = document.getElementById('user-rank-display');
+            const rankIconContainer = document.getElementById('rank-icon-container');
+            const rankDetailBadge = document.getElementById('rank-detail-badge');
+            const rankInfoDesc = document.getElementById('rank-info-desc');
+
+            rankDisplay.innerText = currentRankInfo.name;
+            rankIconContainer.innerHTML = `<i class="fa-solid ${currentRankInfo.icon}"></i>`;
+            rankDetailBadge.innerText = `현재: ${currentRankInfo.name}`;
+
+            if (gameState.rank === 'NONE') {
+                rankInfoDesc.innerText = "아직 검지의 자격을 갖추지 못했습니다. 지령을 수행하여 등급을 올리십시오.";
+            } else if (gameState.rank === 'PROSELYTE') {
+                rankInfoDesc.innerText = "수행자 등급입니다. 하루 최대 2개의 지령을 하사받습니다.";
+            } else {
+                rankInfoDesc.innerText = "대행자 등급입니다. 하루 최대 3개의 지령을 하사받아 집행합니다.";
+            }
+
+            const completedCount = gameState.dailyPrescripts.filter(p => p.executed).length;
+            const quotaTotal = currentRankInfo.quota;
+            document.getElementById('daily-quota-text').innerText = `${completedCount} / ${quotaTotal} 완료`;
+            
+            const quotaPercent = Math.min(100, Math.round((completedCount / quotaTotal) * 100));
+            document.getElementById('daily-quota-bar').style.width = `${quotaPercent}%`;
+
+            renderPrescriptCards();
+            renderHistory();
+            renderArchive();
+        }
+
+        function renderPrescriptCards() {
+            const container = document.getElementById('prescript-cards-container');
+            const activeTheme = getActiveTheme();
+
+            if (gameState.dailyPrescripts.length === 0) {
+                container.innerHTML = `
+                    <div class="glass-panel p-8 rounded-2xl text-center space-y-2">
+                        <i class="fa-solid fa-scroll text-2xl opacity-40"></i>
+                        <p class="text-xs sm:text-sm font-medium opacity-70">오늘 도착한 지령이 없습니다.</p>
+                        <p class="text-[11px] opacity-50">매일 오전 09시 KST에 전달됩니다.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = gameState.dailyPrescripts.map((p, idx) => {
+                const isExecuted = p.executed;
+                const isOpened = p.opened;
+
+                let cardHTML = '';
+                if (activeTheme === 'ivory') {
+                    cardHTML = `
+                        <div class="glass-panel p-6 sm:p-8 rounded-2xl relative overflow-hidden transition-all duration-300 space-y-5 border-[#e2d5c3] min-h-[260px] flex flex-col justify-between shadow-sm">
+                            <div class="flex justify-between items-center text-xs">
+                                <span class="font-bold font-mono text-[#9e2a2b] flex items-center gap-1.5">
+                                    <i class="fa-solid fa-tag"></i> 지령 #${idx + 1}
+                                </span>
+                                <span class="text-[11px] font-mono px-2.5 py-0.5 rounded-full ${isExecuted ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-amber-100 text-amber-800 border border-amber-300'}">
+                                    ${isExecuted ? '이행 완료' : (isOpened ? '열람됨' : '미열람')}
+                                </span>
+                            </div>
+
+                            <div class="py-10 px-6 rounded-xl ${isOpened ? 'bg-[#f8f5ee] border border-[#e2d5c3]' : 'bg-[#ebdcd0] border border-[#d8c5b0]'} min-h-[130px] flex items-center justify-center text-center my-auto shadow-inner">
+                                ${isOpened 
+                                    ? `<p class="font-serif text-sm sm:text-base font-bold leading-relaxed text-[#2c2825] ${isExecuted ? 'line-through opacity-60 decoration-[#9e2a2b] decoration-2' : ''}">"${p.text}"</p>`
+                                    : `<button onclick="openPrescript('${p.id}')" class="w-full py-3.5 rounded-xl bg-[#9e2a2b] hover:bg-[#bd3a3c] text-white text-xs sm:text-sm font-bold transition active:scale-95 flex items-center justify-center gap-2.5 shadow-md">
+                                        <i class="fa-solid fa-envelope-open-text text-sm"></i> 지령 열람하기
+                                       </button>`
+                                }
+                            </div>
+
+                            <div class="relative z-10 pt-1">
+                                ${isOpened && !isExecuted ? `
+                                    <button onclick="executePrescript('${p.id}')" class="w-full py-3.5 rounded-xl bg-[#9e2a2b] hover:bg-[#bd3a3c] text-white font-bold text-xs sm:text-sm shadow-md active:scale-98 transition flex items-center justify-center gap-2">
+                                        <i class="fa-solid fa-stamp"></i> 지령 이행 (완료 처리)
+                                    </button>
+                                ` : ''}
+                            </div>
+
+                            <div class="stamp-executed ${isExecuted ? 'active' : ''}">
+                                <div class="wax-seal-circle flex flex-col items-center justify-center text-center leading-none">
+                                    <i class="fa-solid fa-stamp text-xl mb-1 text-[#9e2a2b]"></i>
+                                    <span class="font-cinzel text-[10px] font-black tracking-tighter text-[#9e2a2b]">INDEX</span>
+                                    <span class="text-[9px] font-serif font-bold text-[#9e2a2b]">수행</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    cardHTML = `
+                        <div class="glass-panel p-6 sm:p-8 rounded-2xl relative overflow-hidden transition-all duration-300 space-y-5 border-slate-300 shadow-md min-h-[260px] flex flex-col justify-between">
+                            <div class="flex justify-between items-center text-xs">
+                                <span class="font-mono font-bold text-sky-600 flex items-center gap-1.5">
+                                    <i class="fa-solid fa-microchip text-sky-500"></i> PRESCRIPT_ID: ${p.id.slice(-6)}
+                                </span>
+                                <span class="text-[10px] font-mono px-2 py-0.5 rounded ${isExecuted ? 'bg-emerald-950 text-emerald-400 border border-emerald-500/50' : 'bg-sky-950 text-sky-300 border border-sky-500/50'}">
+                                    ${isExecuted ? 'STATUS: EXECUTED' : (isOpened ? 'STATUS: OPENED' : 'STATUS: SEALED')}
+                                </span>
+                            </div>
+
+                            <div class="py-10 px-6 rounded-xl bg-[#090d16] border border-sky-500/40 text-sky-300 min-h-[130px] flex items-center justify-center text-center shadow-[inset_0_2px_8px_rgba(0,0,0,0.8)] my-auto">
+                                ${isOpened 
+                                    ? `<p class="font-serif text-sm sm:text-base font-bold leading-relaxed text-sky-100 ${isExecuted ? 'line-through opacity-50 decoration-sky-400 decoration-2' : ''}">"${p.text}"</p>`
+                                    : `<button onclick="openPrescript('${p.id}')" class="w-full py-3.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 text-xs sm:text-sm font-mono font-bold transition active:scale-95 flex items-center justify-center gap-2.5 shadow-[0_0_12px_rgba(14,165,233,0.5)]">
+                                        <i class="fa-solid fa-lock-open text-sm"></i> DECRYPT PRESCRIPT
+                                       </button>`
+                                }
+                            </div>
+
+                            <div class="relative z-10 pt-1">
+                                ${isOpened && !isExecuted ? `
+                                    <button onclick="executePrescript('${p.id}')" class="w-full py-3.5 rounded-xl bg-[#0b1120] hover:bg-slate-900 border border-sky-400/80 text-sky-300 font-mono font-bold text-xs sm:text-sm shadow-[0_0_10px_rgba(14,165,233,0.2)] active:scale-98 transition flex items-center justify-center gap-2">
+                                        <i class="fa-solid fa-check-double text-sky-400"></i> EXECUTE PROTOCOL
+                                    </button>
+                                ` : ''}
+                            </div>
+
+                            <div class="stamp-executed ${isExecuted ? 'active' : ''}">
+                                <div class="wax-seal-circle flex flex-col items-center justify-center text-center leading-none">
+                                    <i class="fa-solid fa-check text-2xl text-sky-400 mb-0.5"></i>
+                                    <span class="font-mono text-[9px] font-bold tracking-widest text-sky-300">CONFIRMED</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+                return cardHTML;
+            }).join('');
+        }
+
+        function applyThemeUI() {
+            const activeTheme = getActiveTheme();
+            const body = document.body;
+
+            body.classList.remove('theme-ivory', 'theme-neon');
+            body.classList.add(`theme-${activeTheme}`);
+
+            const header = document.getElementById('main-header');
+            const logoIconBox = document.getElementById('logo-icon-box');
+            const logoIcon = document.getElementById('logo-icon');
+            const logoTitle = document.getElementById('logo-title');
+            const logoSubtitle = document.getElementById('logo-subtitle');
+            const rankBadgeBox = document.getElementById('rank-badge-box');
+            const rankLabel = document.getElementById('rank-label');
+            const rankIconContainer = document.getElementById('rank-icon-container');
+            const rankDisplay = document.getElementById('user-rank-display');
+            const themeBadge = document.getElementById('theme-badge');
+            const devToggleBtn = document.getElementById('dev-toggle-btn');
+            const devPanel = document.getElementById('dev-panel');
+            const devHeaderTitle = document.getElementById('dev-header-title');
+            const devHeaderSub = document.getElementById('dev-header-sub');
+            const devThemeBox = document.getElementById('dev-theme-box');
+            const devThemeTitle = document.getElementById('dev-theme-title');
+            
+            const btnThemeIvory = document.getElementById('btn-theme-ivory');
+            const btnThemeNeon = document.getElementById('btn-theme-neon');
+            const btnThemeAuto = document.getElementById('btn-theme-auto');
+            
+            const btnSim1 = document.getElementById('btn-sim-1');
+            const btnSim2 = document.getElementById('btn-sim-2');
+            const btnSim3 = document.getElementById('btn-sim-3');
+            const btnSim4 = document.getElementById('btn-sim-4');
+            const btnResetAll = document.getElementById('btn-reset-all');
+
+            const mainFooter = document.getElementById('main-footer');
+            const quotaBarBg = document.getElementById('quota-bar-bg');
+            const quotaBar = document.getElementById('daily-quota-bar');
+            const rankDetailBadge = document.getElementById('rank-detail-badge');
+            const prescriptTitleIcon = document.getElementById('prescript-title-icon');
+            const prescriptTitleText = document.getElementById('prescript-title-text');
+            const tabNavBar = document.getElementById('tab-nav-bar');
+            const uuidChip = document.getElementById('uuid-display-chip');
+
+            const historyArchiveContainer = document.getElementById('history-archive-panel');
+
+            uuidChip.innerText = `UUID: ${gameState.uuid.slice(0, 12)}...`;
+
+            if (activeTheme === 'ivory') {
+                header.className = "sticky top-0 z-40 border-b px-3 sm:px-6 py-2.5 sm:py-3 transition-all duration-300 bg-[#f8f5ee]/90 backdrop-blur-md border-[#e2d5c3]";
+                logoIconBox.className = "w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#ebdcd0] border border-[#e2d5c3] flex items-center justify-center shrink-0 shadow-sm";
+                logoIcon.className = "fa-solid fa-scroll text-[#9e2a2b] text-base sm:text-lg";
+                logoTitle.className = "font-cinzel tracking-widest text-base sm:text-lg font-black leading-tight text-[#2c2825]";
+                logoSubtitle.className = "text-[10px] sm:text-xs font-serif tracking-tight text-[#6e675f]";
+
+                themeBadge.className = "text-[9px] font-mono px-1.5 py-0.2 rounded border border-[#648dc8]/40 bg-[#4a6fa5]/10 text-[#35527a] uppercase font-bold";
+                themeBadge.innerText = "IVORY PAPER";
+
+                rankBadgeBox.className = "flex items-center space-x-2 bg-[#ebdcd0] border border-[#e2d5c3] pl-2.5 pr-1.5 py-1 rounded-xl shadow-xs";
+                rankLabel.className = "text-[9px] sm:text-[10px] font-sans uppercase tracking-wider leading-none text-[#6e675f]";
+                rankIconContainer.className = "w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-[#ebdcd0] flex items-center justify-center border border-[#e2d5c3] text-xs sm:text-sm shrink-0 text-[#9e2a2b]";
+
+                devToggleBtn.className = "active:scale-95 text-xs bg-[#ebdcd0] hover:bg-[#e2d5c3] text-[#2c2825] px-3 py-2.5 sm:py-2 rounded-xl border border-[#d8c5b0] transition flex items-center justify-center gap-2 shrink-0 touch-manipulation min-h-[40px] font-medium";
+                devPanel.style.borderColor = "#9e2a2b";
+                devHeaderTitle.className = "text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 text-[#2c2825]";
+                devHeaderSub.className = "text-[10px] font-mono text-[#6e675f]";
+                devThemeBox.className = "p-2.5 rounded-xl bg-[#e2d5c3]/50 border border-[#d8c5b0] space-y-2";
+                devThemeTitle.className = "text-[11px] font-bold text-[#35527a] flex items-center justify-between";
+
+                btnThemeIvory.className = "py-1.5 px-2 rounded font-bold transition bg-[#ebdcd0] hover:bg-[#d8c5b0] text-[#2c2825] border border-[#d8c5b0]";
+                btnThemeNeon.className = "py-1.5 px-2 rounded font-bold transition bg-[#f2eae0] hover:bg-[#ebdcd0] text-[#6e675f] border border-[#e2d5c3]";
+                btnThemeAuto.className = "py-1.5 px-2 rounded transition bg-[#f2eae0] hover:bg-[#ebdcd0] text-[#6e675f] border border-[#e2d5c3]";
+
+                btnSim1.className = "active:scale-95 py-2.5 px-3 rounded-xl transition font-medium bg-[#ebdcd0] hover:bg-[#d8c5b0] text-[#2c2825] border border-[#d8c5b0]";
+                btnSim2.className = "active:scale-95 py-2.5 px-3 rounded-xl transition font-medium bg-[#ebdcd0] hover:bg-[#d8c5b0] text-[#2c2825] border border-[#d8c5b0]";
+                btnSim3.className = "active:scale-95 py-2.5 px-3 rounded-xl transition font-medium bg-[#ebdcd0] hover:bg-[#d8c5b0] text-[#2c2825] border border-[#d8c5b0]";
+                btnSim4.className = "active:scale-95 py-2.5 px-3 rounded-xl transition font-medium bg-[#ebdcd0] hover:bg-[#d8c5b0] text-[#9e2a2b] border border-[#d8c5b0]";
+                btnResetAll.className = "w-full active:scale-95 py-2 px-3 rounded-xl transition text-xs font-medium bg-[#ebdcd0] hover:bg-[#d8c5b0] text-[#9e2a2b] border border-[#d8c5b0]";
+
+                mainFooter.className = "border-t border-[#e2d5c3] bg-[#f8f5ee]/80 py-5 text-center text-xs text-[#6e675f] px-4 mt-6";
+                quotaBarBg.className = "w-full h-2.5 rounded-full overflow-hidden p-0.5 border border-[#e2d5c3] bg-[#ebdcd0]";
+                quotaBar.className = "h-full w-0 rounded-full transition-all duration-500 bg-gradient-to-r from-[#4a6fa5] to-[#9e2a2b]";
+
+                rankDetailBadge.className = "font-bold px-2 py-0.5 rounded-md border text-[11px] bg-[#ebdcd0] border-[#d8c5b0] text-[#2c2825]";
+                prescriptTitleIcon.className = "fa-solid fa-envelope-open-text text-[#9e2a2b]";
+                prescriptTitleText.className = "text-base sm:text-lg font-bold flex items-center gap-2 font-serif text-[#2c2825]";
+                
+                if (historyArchiveContainer) {
+                    historyArchiveContainer.style.background = 'rgba(242, 234, 224, 0.9)';
+                    historyArchiveContainer.style.borderColor = '#e2d5c3';
+                }
+                tabNavBar.className = "flex border-b border-[#e2d5c3] bg-[#ebdcd0]/80";
+
+                const rankColor = gameState.rank === 'MESSENGER' ? 'text-[#4a6fa5]' : (gameState.rank === 'PROSELYTE' ? 'text-[#9e2a2b]' : 'text-[#6e675f]');
+                rankDisplay.className = `font-bold text-xs sm:text-sm leading-tight mt-0.5 ${rankColor}`;
+
+            } else {
+                header.className = "sticky top-0 z-40 border-b px-3 sm:px-6 py-2.5 sm:py-3 transition-all duration-300 bg-white/90 backdrop-blur-md border-slate-200 shadow-sm";
+                logoIconBox.className = "w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#090d16] border border-sky-500/50 flex items-center justify-center shrink-0 shadow-[0_0_10px_rgba(14,165,233,0.3)]";
+                logoIcon.className = "fa-solid fa-microchip text-sky-400 text-base sm:text-lg";
+                logoTitle.className = "font-cinzel tracking-widest text-base sm:text-lg font-black leading-tight text-slate-900";
+                logoSubtitle.className = "text-[10px] sm:text-xs font-serif tracking-tight text-slate-500";
+
+                themeBadge.className = "text-[9px] font-mono px-1.5 py-0.2 rounded border border-sky-500/50 bg-sky-950 text-sky-300 uppercase font-bold";
+                themeBadge.innerText = "NEON HUD";
+
+                rankBadgeBox.className = "flex items-center space-x-2 bg-slate-100 border border-slate-300 pl-2.5 pr-1.5 py-1 rounded-xl shadow-xs";
+                rankLabel.className = "text-[9px] sm:text-[10px] font-sans uppercase tracking-wider leading-none text-slate-500";
+                rankIconContainer.className = "w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-slate-900 flex items-center justify-center border border-sky-500/50 text-xs sm:text-sm shrink-0 text-sky-400";
+
+                devToggleBtn.className = "active:scale-95 text-xs bg-slate-900 text-sky-300 hover:bg-slate-800 px-3 py-2.5 sm:py-2 rounded-xl border border-sky-500/50 transition flex items-center justify-center gap-2 shrink-0 touch-manipulation min-h-[40px] font-medium shadow-[0_0_8px_rgba(14,165,233,0.2)]";
+                devPanel.style.borderColor = "#0ea5e9";
+                devHeaderTitle.className = "text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 text-sky-400";
+                devHeaderSub.className = "text-[10px] font-mono text-sky-400/70";
+                devThemeBox.className = "p-2.5 rounded-xl display-box space-y-2";
+                devThemeTitle.className = "text-[11px] font-bold text-sky-400 flex items-center justify-between";
+
+                btnThemeIvory.className = "py-1.5 px-2 rounded font-bold transition bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700";
+                btnThemeNeon.className = "py-1.5 px-2 rounded font-bold transition bg-sky-950 text-sky-300 border border-sky-500/60 shadow-[0_0_6px_rgba(14,165,233,0.3)]";
+                btnThemeAuto.className = "py-1.5 px-2 rounded transition bg-slate-900 hover:bg-slate-800 text-slate-400 border border-slate-700";
+
+                btnSim1.className = "active:scale-95 py-2.5 px-3 rounded-xl transition font-medium bg-slate-900 hover:bg-slate-800 text-sky-300 border border-sky-500/40";
+                btnSim2.className = "active:scale-95 py-2.5 px-3 rounded-xl transition font-medium bg-slate-900 hover:bg-slate-800 text-sky-300 border border-sky-500/40";
+                btnSim3.className = "active:scale-95 py-2.5 px-3 rounded-xl transition font-medium bg-slate-900 hover:bg-slate-800 text-sky-300 border border-sky-500/40";
+                btnSim4.className = "active:scale-95 py-2.5 px-3 rounded-xl transition font-medium bg-slate-900 hover:bg-slate-800 text-rose-400 border border-rose-500/40";
+                btnResetAll.className = "w-full active:scale-95 py-2 px-3 rounded-xl transition text-xs font-medium bg-slate-900 hover:bg-slate-800 text-rose-400 border border-rose-500/40";
+
+                mainFooter.className = "border-t border-slate-200 bg-white py-5 text-center text-xs text-slate-500 px-4 mt-6";
+                quotaBarBg.className = "w-full h-2.5 rounded-full overflow-hidden p-0.5 border border-slate-300 bg-slate-100";
+                quotaBar.className = "h-full w-0 rounded-full transition-all duration-500 bg-gradient-to-r from-sky-500 to-indigo-600";
+
+                rankDetailBadge.className = "font-bold px-2 py-0.5 rounded-md border text-[11px] bg-slate-900 border-sky-500/50 text-sky-300";
+                prescriptTitleIcon.className = "fa-solid fa-envelope-open-text text-sky-500";
+                prescriptTitleText.className = "text-base sm:text-lg font-bold flex items-center gap-2 font-serif text-slate-900";
+                
+                if (historyArchiveContainer) {
+                    historyArchiveContainer.style.background = '';
+                    historyArchiveContainer.style.borderColor = '';
+                }
+                tabNavBar.className = "flex border-b border-slate-200 bg-slate-100";
+
+                rankDisplay.className = "font-bold text-xs sm:text-sm leading-tight mt-0.5 text-sky-600";
+            }
+
+            const activeText = gameState.adminThemeOverride === 'auto' ? 'AUTO (UUID 기반)' : (gameState.adminThemeOverride === 'ivory' ? '강제: 아이보리 종이' : '강제: 백색 네온');
+            document.getElementById('current-theme-mode-text').innerText = activeText;
+
+            const activeTab = document.getElementById('tab-content-history').classList.contains('hidden') ? 'archive' : 'history';
+            switchTab(activeTab);
+        }
+
+        function renderHistory() {
+            const list = document.getElementById('history-list');
+            const total = gameState.history.length;
+            const activeTheme = getActiveTheme();
+            document.getElementById('history-total-count').innerText = total;
+
+            if (total === 0) {
+                list.innerHTML = `<div class="text-center text-xs sm:text-sm py-8 opacity-50">아직 수행한 지령이 없습니다.</div>`;
+                document.getElementById('history-pagination').classList.add('hidden');
+                return;
+            }
+
+            document.getElementById('history-pagination').classList.remove('hidden');
+
+            const totalPages = Math.ceil(total / ITEMS_PER_PAGE);
+            if (currentHistoryPage > totalPages) currentHistoryPage = totalPages;
+            if (currentHistoryPage < 1) currentHistoryPage = 1;
+
+            const startIdx = (currentHistoryPage - 1) * ITEMS_PER_PAGE;
+            const pageItems = gameState.history.slice(startIdx, startIdx + ITEMS_PER_PAGE);
+
+            if (activeTheme === 'ivory') {
+                list.innerHTML = pageItems.map(item => `
+                    <div class="p-3.5 rounded-xl flex justify-between items-center gap-2 text-xs bg-[#f2eae0] border border-[#e2d5c3] shadow-xs">
+                        <div class="space-y-1 min-w-0 flex-1">
+                            <div class="font-serif truncate text-[#2c2825] font-semibold">"${item.text}"</div>
+                            <div class="text-[10px] opacity-75 font-mono text-[#6e675f]">${item.date} (${item.rank})</div>
+                        </div>
+                        <span class="shrink-0 text-[11px] px-2.5 py-1 rounded-md font-bold text-[#9e2a2b] bg-[#ebdcd0] border border-[#d8c5b0] flex items-center gap-1 shadow-xs">
+                            <i class="fa-solid fa-check text-[10px]"></i> 수행됨
+                        </span>
+                    </div>
+                `).join('');
+            } else {
+                list.innerHTML = pageItems.map(item => `
+                    <div class="bg-[#090d16] p-3.5 rounded-xl border border-sky-500/30 shadow-[0_0_8px_rgba(14,165,233,0.1)] flex justify-between items-center gap-2 text-xs">
+                        <div class="space-y-1 min-w-0 flex-1">
+                            <div class="font-serif truncate text-sky-100">"${item.text}"</div>
+                            <div class="text-[10px] font-mono text-sky-400/70">${item.date} [${item.rank}]</div>
+                        </div>
+                        <span class="shrink-0 text-[10px] font-mono px-2 py-1 rounded-md font-bold text-sky-300 bg-sky-950/80 border border-sky-500/50 flex items-center gap-1 shadow-[0_0_6px_rgba(56,189,248,0.3)]">
+                            <i class="fa-solid fa-check text-[10px] text-sky-400"></i> EXEC_OK
+                        </span>
+                    </div>
+                `).join('');
+            }
+
+            document.getElementById('history-page-info').innerText = `${currentHistoryPage} / ${totalPages} 페이지`;
+            document.getElementById('btn-prev-page').disabled = (currentHistoryPage === 1);
+            document.getElementById('btn-next-page').disabled = (currentHistoryPage === totalPages);
+        }
+
+        function renderArchive() {
+            const list = document.getElementById('archive-list');
+            const activeTheme = getActiveTheme();
+            document.getElementById('archive-count').innerText = gameState.archive.length;
+
+            if (gameState.archive.length === 0) {
+                list.innerHTML = `<div class="col-span-full text-center text-xs sm:text-sm py-8 opacity-50">보관된 지령이 없습니다.</div>`;
+                return;
+            }
+
+            if (activeTheme === 'ivory') {
+                list.innerHTML = gameState.archive.map((item, idx) => `
+                    <div class="p-3.5 rounded-xl flex flex-col justify-between text-xs space-y-1.5 bg-[#f2eae0] border border-[#e2d5c3] shadow-xs">
+                        <div class="flex items-center justify-between text-[10px] font-mono opacity-70 border-b border-[#e2d5c3] pb-1 text-[#6e675f]">
+                            <span>기록 #${idx + 1}</span>
+                            <span>${item.date.split(' ')[0]}</span>
+                        </div>
+                        <div class="font-serif leading-snug text-[#2c2825] font-medium">"${item.text}"</div>
+                    </div>
+                `).join('');
+            } else {
+                list.innerHTML = gameState.archive.map((item, idx) => `
+                    <div class="bg-[#090d16] p-3.5 rounded-xl border border-sky-500/30 shadow-[0_0_8px_rgba(14,165,233,0.1)] flex flex-col justify-between text-xs space-y-1.5">
+                        <div class="flex items-center justify-between text-[10px] font-mono border-b border-sky-900/60 pb-1 text-sky-400">
+                            <span>ARCHIVE_REF #${String(idx + 1).padStart(3, '0')}</span>
+                            <span>${item.date.split(' ')[0]}</span>
+                        </div>
+                        <div class="font-serif leading-snug text-sky-100">"${item.text}"</div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function switchTab(tabName) {
+            const historyBtn = document.getElementById('tab-btn-history');
+            const archiveBtn = document.getElementById('tab-btn-archive');
+            const historyContent = document.getElementById('tab-content-history');
+            const archiveContent = document.getElementById('tab-content-archive');
+            const activeTheme = getActiveTheme();
+
+            if (tabName === 'history') {
+                historyContent.classList.remove('hidden');
+                archiveContent.classList.add('hidden');
+            } else {
+                archiveContent.classList.remove('hidden');
+                historyContent.classList.add('hidden');
+            }
+
+            if (activeTheme === 'ivory') {
+                if (tabName === 'history') {
+                    historyBtn.className = "flex-1 py-3 px-3 text-xs sm:text-sm font-semibold border-b-2 border-[#9e2a2b] text-[#2c2825] bg-[#f2eae0] transition flex items-center justify-center gap-1.5 active:opacity-80 min-h-[48px]";
+                    archiveBtn.className = "flex-1 py-3 px-3 text-xs sm:text-sm font-semibold border-b-2 border-transparent text-[#6e675f] bg-[#ebdcd0]/50 transition flex items-center justify-center gap-1.5 active:opacity-80 min-h-[48px] opacity-70 hover:opacity-100";
+                } else {
+                    archiveBtn.className = "flex-1 py-3 px-3 text-xs sm:text-sm font-semibold border-b-2 border-[#9e2a2b] text-[#2c2825] bg-[#f2eae0] transition flex items-center justify-center gap-1.5 active:opacity-80 min-h-[48px]";
+                    historyBtn.className = "flex-1 py-3 px-3 text-xs sm:text-sm font-semibold border-b-2 border-transparent text-[#6e675f] bg-[#ebdcd0]/50 transition flex items-center justify-center gap-1.5 active:opacity-80 min-h-[48px] opacity-70 hover:opacity-100";
+                }
+            } else {
+                if (tabName === 'history') {
+                    historyBtn.className = "flex-1 py-3 px-3 text-xs sm:text-sm font-mono font-bold border-b-2 border-sky-400 text-sky-300 bg-[#0b1120] transition flex items-center justify-center gap-1.5 active:opacity-80 min-h-[48px] shadow-[inset_0_-2px_6px_rgba(14,165,233,0.3)]";
+                    archiveBtn.className = "flex-1 py-3 px-3 text-xs sm:text-sm font-mono border-b-2 border-transparent text-slate-400 bg-slate-900/60 transition flex items-center justify-center gap-1.5 active:opacity-80 min-h-[48px] opacity-70 hover:opacity-100";
+                } else {
+                    archiveBtn.className = "flex-1 py-3 px-3 text-xs sm:text-sm font-mono font-bold border-b-2 border-sky-400 text-sky-300 bg-[#0b1120] transition flex items-center justify-center gap-1.5 active:opacity-80 min-h-[48px] shadow-[inset_0_-2px_6px_rgba(14,165,233,0.3)]";
+                    historyBtn.className = "flex-1 py-3 px-3 text-xs sm:text-sm font-mono border-b-2 border-transparent text-slate-400 bg-slate-900/60 transition flex items-center justify-center gap-1.5 active:opacity-80 min-h-[48px] opacity-70 hover:opacity-100";
+                }
+            }
+        }
+
+        let toastTimeout;
+        function showToast(title, msg, isError = false) {
+            const modal = document.getElementById('toast-modal');
+            const toastBg = document.getElementById('toast-bg');
+            const iconWrapper = document.getElementById('toast-icon-wrapper');
+            const titleEl = document.getElementById('toast-title');
+            const msgEl = document.getElementById('toast-msg');
+            const iconEl = document.getElementById('toast-icon');
+            const activeTheme = getActiveTheme();
+
+            titleEl.innerText = title;
+            msgEl.innerText = msg;
+
+            if (activeTheme === 'ivory') {
+                toastBg.className = "p-4 rounded-2xl shadow-2xl flex items-center space-x-3.5 bg-[#f2eae0] border border-[#e2d5c3] text-[#2c2825]";
+                if (isError) {
+                    iconWrapper.className = "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border border-amber-300 bg-amber-100 text-amber-800";
+                    iconEl.className = "fa-solid fa-triangle-exclamation text-lg";
+                } else {
+                    iconWrapper.className = "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border border-[#9e2a2b]/30 bg-[#ebdcd0] text-[#9e2a2b]";
+                    iconEl.className = "fa-solid fa-circle-check text-lg";
+                }
+            } else {
+                toastBg.className = "p-4 rounded-2xl shadow-2xl flex items-center space-x-3.5 display-box";
+                if (isError) {
+                    iconWrapper.className = "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border border-amber-500/50 bg-amber-950 text-amber-400";
+                    iconEl.className = "fa-solid fa-triangle-exclamation text-lg";
+                } else {
+                    iconWrapper.className = "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border border-sky-500/50 bg-sky-950 text-sky-400";
+                    iconEl.className = "fa-solid fa-circle-check text-lg";
+                }
+            }
+
+            modal.classList.remove('translate-y-24', 'opacity-0');
+            modal.classList.add('translate-y-0', 'opacity-100');
+
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                modal.classList.remove('translate-y-0', 'opacity-100');
+                modal.classList.add('translate-y-24', 'opacity-0');
+            }, 3200);
+        }
+
+        window.onload = function() {
+            loadState();
+            checkDailyReset();
+            updateUI();
+        };
+    </script>
+</body>
+</html>
